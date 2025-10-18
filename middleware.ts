@@ -16,5 +16,5 @@ export async function middleware(request: NextRequest) {
  
 export const config = {
   runtime: "nodejs",
-  matcher: ["/admin", "/account", "/deposit"], // Apply middleware to specific routes
+  matcher: ["/admin", "/account"], // Removed /deposit - page handles own auth
 };
