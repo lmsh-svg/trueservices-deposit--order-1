@@ -344,7 +344,7 @@ export default function Food4LessPage() {
               Get massive discounts on your favorite food delivery services
             </p>
             <Badge className="mt-4 bg-primary-foreground text-primary px-6 py-2 text-lg font-bold shadow-lg">
-              Save up to 70% on every order
+              Save up to 45% on every order
             </Badge>
           </div>
         </div>

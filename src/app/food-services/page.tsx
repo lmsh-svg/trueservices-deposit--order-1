@@ -277,19 +277,19 @@ export default function FoodServices() {
             <p className="text-xl md:text-2xl text-zinc-300 font-bold cursor-help">
               Easy, Reliable, 100% <span className="text-primary">TRUE</span>
             </p>
-            <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-64 bg-zinc-900/95 border border-primary/30 rounded-lg p-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 text-left shadow-2xl z-50 backdrop-blur">
-              <div className="flex items-center gap-3 mb-3">
+            <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-56 bg-zinc-900/95 border border-primary/30 rounded-lg p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 text-left shadow-2xl z-50 backdrop-blur">
+              <div className="flex items-center gap-2 mb-2">
                 <Image
                   src="https://files.jotform.com/jufs/TRUEServiceSupport/form_files/trueservicestransparent.67f010b8679bd1.07484258.png?md5=iFg1NnHrukcAtXkiT2Ci5Q&expires=1760754468"
                   alt="TrueServices"
-                  width={32}
-                  height={32}
+                  width={24}
+                  height={24}
                   className="object-contain"
                   unoptimized
                 />
-                <p className="text-primary font-bold text-base">TRUE</p>
+                <p className="text-primary font-bold text-sm">TRUE</p>
               </div>
-              <div className="space-y-1 text-sm">
+              <div className="space-y-0.5 text-xs">
                 <p className="text-white"><span className="text-primary font-bold">T</span>otal</p>
                 <p className="text-white"><span className="text-primary font-bold">R</span>eliable</p>
                 <p className="text-white"><span className="text-primary font-bold">U</span>nbeatable</p>
@@ -309,9 +309,9 @@ export default function FoodServices() {
                 Start Saving Now
               </Link>
             </Button>
-            <Button asChild size="default" variant="outline" className="border-zinc-700 hover:bg-zinc-900 text-white px-6 py-5 text-base font-bold">
+            <Button asChild size="sm" variant="outline" className="border-zinc-700 hover:bg-zinc-900 text-zinc-400 hover:text-white px-4 py-4 text-sm font-medium">
               <Link href="#how-it-works">
-                <Info className="mr-2 h-5 w-5" />
+                <Info className="mr-2 h-4 w-4" />
                 How It Works
               </Link>
             </Button>
@@ -325,66 +325,65 @@ export default function FoodServices() {
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl font-black text-center mb-8 text-white">How It Works</h2>
             
-            <div className="space-y-8">
-              {/* Step 1 */}
+            <div className="space-y-6">
+              {/* Upload Header */}
+              <div className="text-center">
+                <h3 className="text-2xl font-black text-white mb-4">Upload Your DoorDash Screenshots</h3>
+                <p className="text-base text-zinc-300 leading-relaxed">
+                  To process your order, we need two screenshots from your DoorDash app: one showing your cart items and another showing the checkout total. Follow the instructions below to upload clear screenshots.
+                </p>
+              </div>
+
+              {/* Cart Screenshot Card */}
               <Card className="bg-zinc-900/80 rounded-xl border border-zinc-800/80 p-6">
-                <div className="flex items-start gap-4 mb-4">
-                  <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-black text-xl flex-shrink-0">1</div>
-                  <div className="flex-1">
-                    <h3 className="text-xl font-black text-white mb-3">Upload Your DoorDash Screenshots</h3>
-                    <p className="text-base text-zinc-300 leading-relaxed mb-3">
-                      To process your order, we need two screenshots from your DoorDash app: one showing your cart items and another showing the checkout total. Follow the instructions below to upload clear screenshots.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="space-y-6 ml-16">
-                  <div>
-                    <h4 className="text-lg font-bold text-white mb-2">Cart Screenshot</h4>
-                    <p className="text-sm text-zinc-300 mb-3">
-                      Open your DoorDash cart, ensure all items are visible, and take a screenshot. Upload it in the designated field below.
-                    </p>
-                    <p className="text-sm text-zinc-400 mb-3 italic">Example:</p>
-                    <div className="w-full">
-                      <div className="relative w-full h-[540px] rounded-lg overflow-hidden shadow-2xl border border-zinc-800">
-                        <Image
-                          src="https://files.jotform.com/jufs/TRUEServiceSupport/form_files/DD-2.682168432a3f96.74677364.png?md5=TWfuQePJMp7A_osAPJ97VQ&expires=1760753269"
-                          alt="Cart Screenshot Example"
-                          fill
-                          className="object-contain bg-white"
-                          unoptimized
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <h4 className="text-lg font-bold text-white mb-2">Checkout Total Screenshot</h4>
-                    <p className="text-sm text-zinc-300 mb-3">
-                      Proceed to the DoorDash checkout page, ensure the total (including fees and taxes) is visible, and take a screenshot. Upload it in the designated field below.
-                    </p>
-                    <p className="text-sm text-zinc-400 mb-3 italic">Example:</p>
-                    <div className="w-full">
-                      <div className="relative w-full h-[540px] rounded-lg overflow-hidden shadow-2xl border border-zinc-800">
-                        <Image
-                          src="https://files.jotform.com/jufs/TRUEServiceSupport/form_files/DDS-2.68216812cd78e2.99249574.png?md5=SPJFI0HPsANa_kdQAEYg-w&expires=1760753270"
-                          alt="Checkout Total Screenshot Example"
-                          fill
-                          className="object-contain bg-white"
-                          unoptimized
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <h4 className="text-xl font-black text-white mb-3">Cart Screenshot</h4>
+                <p className="text-base text-zinc-300 leading-relaxed">
+                  Open your DoorDash cart, ensure all items are visible, and take a screenshot. Upload it in the designated field below.
+                </p>
               </Card>
 
-              {/* Step 2 - Tips */}
+              {/* Cart Screenshot Image - Outside Card */}
+              <div>
+                <p className="text-sm text-zinc-400 mb-3 italic">Example:</p>
+                <div className="relative w-full h-[560px] rounded-lg overflow-hidden shadow-2xl border border-zinc-800">
+                  <Image
+                    src="https://files.jotform.com/jufs/TRUEServiceSupport/form_files/DD-2.682168432a3f96.74677364.png?md5=TWfuQePJMp7A_osAPJ97VQ&expires=1760753269"
+                    alt="Cart Screenshot Example"
+                    fill
+                    className="object-contain"
+                    unoptimized
+                  />
+                </div>
+              </div>
+
+              {/* Checkout Screenshot Card */}
               <Card className="bg-zinc-900/80 rounded-xl border border-zinc-800/80 p-6">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-black text-xl flex-shrink-0">💡</div>
+                <h4 className="text-xl font-black text-white mb-3">Checkout Total Screenshot</h4>
+                <p className="text-base text-zinc-300 leading-relaxed">
+                  Proceed to the DoorDash checkout page, ensure the total (including fees and taxes) is visible, and take a screenshot. Upload it in the designated field below.
+                </p>
+              </Card>
+
+              {/* Checkout Screenshot Image - Outside Card */}
+              <div>
+                <p className="text-sm text-zinc-400 mb-3 italic">Example:</p>
+                <div className="relative w-full h-[560px] rounded-lg overflow-hidden shadow-2xl border border-zinc-800">
+                  <Image
+                    src="https://files.jotform.com/jufs/TRUEServiceSupport/form_files/DDS-2.68216812cd78e2.99249574.png?md5=SPJFI0HPsANa_kdQAEYg-w&expires=1760753270"
+                    alt="Checkout Total Screenshot Example"
+                    fill
+                    className="object-contain"
+                    unoptimized
+                  />
+                </div>
+              </div>
+
+              {/* Tip Card */}
+              <Card className="bg-zinc-900/80 rounded-xl border border-zinc-800/80 p-5">
+                <div className="flex items-start gap-3">
+                  <div className="text-2xl">💡</div>
                   <div className="flex-1">
-                    <h3 className="text-lg font-black text-white mb-2">Tip</h3>
+                    <h4 className="text-base font-bold text-white mb-2">Tip</h4>
                     <p className="text-sm text-zinc-300">
                       For best results, take screenshots in a well-lit environment and ensure all text is legible. Use the DoorDash app, not the website.
                     </p>
@@ -394,11 +393,11 @@ export default function FoodServices() {
             </div>
 
             {/* Important Notice */}
-            <div className="mt-6 flex items-start gap-3 p-3 bg-red-950/40 border border-red-900/50 rounded-lg">
-              <AlertCircle className="h-4 w-4 text-red-400 flex-shrink-0 mt-0.5" />
+            <div className="mt-6 flex items-start gap-3 p-4 bg-red-950/40 border border-red-900/50 rounded-lg">
+              <AlertCircle className="h-5 w-5 text-red-400 flex-shrink-0 mt-0.5" />
               <div className="flex-1">
-                <p className="text-xs font-bold text-red-200 mb-1">Important:</p>
-                <p className="text-xs text-red-300 leading-relaxed">
+                <p className="text-sm font-bold text-red-200 mb-1">Important:</p>
+                <p className="text-sm text-red-300 leading-relaxed">
                   Any attempt to falsify your total will be detected and may result in a permanent ban from our services. Please provide accurate screenshots to avoid delays.
                 </p>
               </div>

@@ -113,20 +113,17 @@ export const loyaltyRewards = sqliteTable('loyalty_rewards', {
   createdAt: text('created_at').notNull(),
 });
 
-// Auth tables for better-auth
+// Auth tables for better-auth - FIXED: Use snake_case to match actual database
 export const user = sqliteTable("user", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
   emailVerified: integer("email_verified", { mode: "boolean" })
-    .$defaultFn(() => false)
     .notNull(),
   image: text("image"),
   createdAt: integer("created_at", { mode: "timestamp" })
-    .$defaultFn(() => new Date())
     .notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp" })
-    .$defaultFn(() => new Date())
     .notNull(),
 });
 
@@ -170,12 +167,8 @@ export const verification = sqliteTable("verification", {
   identifier: text("identifier").notNull(),
   value: text("value").notNull(),
   expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
-  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(
-    () => new Date(),
-  ),
-  updatedAt: integer("updated_at", { mode: "timestamp" }).$defaultFn(
-    () => new Date(),
-  ),
+  createdAt: integer("created_at", { mode: "timestamp" }),
+  updatedAt: integer("updated_at", { mode: "timestamp" }),
 });
 
 // Add new tables at the end

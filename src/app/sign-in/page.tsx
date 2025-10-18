@@ -10,7 +10,6 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, Loader2 } from "lucide-react";
-import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
 
 export default function SignInPage() {
@@ -32,32 +31,46 @@ export default function SignInPage() {
       // Try regular user email format first
       let internalEmail = `${formData.username.toLowerCase()}@user.trueservices.local`;
       
-      let { error } = await authClient.signIn.email({
-        email: internalEmail,
-        password: formData.password,
-        rememberMe: formData.rememberMe,
-        callbackURL: "/account",
-      });
-
-      // If failed, try admin email format
-      if (error) {
-        internalEmail = `${formData.username.toLowerCase()}@trueservices.local`;
-        const adminResult = await authClient.signIn.email({
+      let response = await fetch('/api/auth/admin-sign-in', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           email: internalEmail,
           password: formData.password,
-          rememberMe: formData.rememberMe,
-          callbackURL: "/account",
+        }),
+      });
+
+      let data = await response.json();
+
+      // If failed, try admin email format
+      if (!data.success) {
+        internalEmail = `${formData.username.toLowerCase()}@trueservices.local`;
+        response = await fetch('/api/auth/admin-sign-in', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: internalEmail,
+            password: formData.password,
+          }),
         });
         
-        if (adminResult.error) {
+        data = await response.json();
+        
+        if (!data.success) {
           setError("Invalid username or password. Please make sure you have created an account and try again.");
           setLoading(false);
           return;
         }
       }
 
+      // Store session token
+      if (data.session?.token) {
+        localStorage.setItem("bearer_token", data.session.token);
+      }
+
       toast.success("Signed in successfully!");
       router.push("/account");
+      router.refresh();
     } catch (err) {
       setError("An unexpected error occurred. Please try again.");
       setLoading(false);
