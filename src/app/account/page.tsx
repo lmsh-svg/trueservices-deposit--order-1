@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { Navigation } from "@/components/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useSession } from "@/lib/auth-client";
 import {
-  ArrowLeft,
   Loader2,
   Wallet,
   ShoppingBag,
@@ -187,28 +187,19 @@ export default function AccountPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted">
       {/* Navigation */}
-      <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Button variant="ghost" onClick={() => router.push("/")} className="gap-2">
-            <ArrowLeft className="h-4 w-4" />
-            Back to Home
-          </Button>
-          <h1 className="text-xl font-bold">My Account</h1>
-          <div className="w-24"></div>
-        </div>
-      </nav>
+      <Navigation />
 
-      <div className="container mx-auto px-4 py-12">
+      <div className="container mx-auto px-4 py-8 md:py-12">
         {/* Account Overview */}
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
-          <Card className="p-6">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
+          <Card className="p-4 md:p-6">
             <div className="flex items-center gap-3 mb-2">
               <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
                 <Wallet className="h-5 w-5 text-primary" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Account Balance</p>
-                <p className="text-2xl font-bold">${balance.toFixed(2)}</p>
+                <p className="text-xl md:text-2xl font-bold">${balance.toFixed(2)}</p>
               </div>
             </div>
             <Button
@@ -222,14 +213,14 @@ export default function AccountPage() {
             </Button>
           </Card>
 
-          <Card className="p-6">
+          <Card className="p-4 md:p-6">
             <div className="flex items-center gap-3 mb-2">
               <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
                 <ShoppingBag className="h-5 w-5 text-primary" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Total Orders</p>
-                <p className="text-2xl font-bold">{orders.length}</p>
+                <p className="text-xl md:text-2xl font-bold">{orders.length}</p>
               </div>
             </div>
             <Button
@@ -243,14 +234,14 @@ export default function AccountPage() {
             </Button>
           </Card>
 
-          <Card className="p-6">
+          <Card className="p-4 md:p-6 sm:col-span-2 lg:col-span-1">
             <div className="flex items-center gap-3 mb-2">
               <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
                 <Award className="h-5 w-5 text-primary" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Loyalty Points</p>
-                <p className="text-2xl font-bold">{loyaltyPoints}</p>
+                <p className="text-xl md:text-2xl font-bold">{loyaltyPoints}</p>
               </div>
             </div>
             <p className="text-xs text-muted-foreground mt-4">
@@ -260,11 +251,11 @@ export default function AccountPage() {
         </div>
 
         {/* User Info - Simplified, No Email/Name Display */}
-        <Card className="p-6 mb-8">
-          <h2 className="text-xl font-bold mb-4">Account Information</h2>
+        <Card className="p-4 md:p-6 mb-6 md:mb-8">
+          <h2 className="text-lg md:text-xl font-bold mb-4">Account Information</h2>
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center">
-              <span className="text-2xl font-black text-primary">
+            <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-primary/20 flex items-center justify-center">
+              <span className="text-xl md:text-2xl font-black text-primary">
                 {session.user.role === "admin" ? "A" : "U"}
               </span>
             </div>
@@ -286,23 +277,23 @@ export default function AccountPage() {
         {/* Tabs for different sections */}
         <Tabs defaultValue="orders" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="orders">
+            <TabsTrigger value="orders" className="text-xs md:text-sm">
               <ShoppingBag className="h-4 w-4 mr-2" />
-              Orders
+              <span className="hidden sm:inline">Orders</span>
             </TabsTrigger>
-            <TabsTrigger value="transactions">
+            <TabsTrigger value="transactions" className="text-xs md:text-sm">
               <Receipt className="h-4 w-4 mr-2" />
-              Transactions
+              <span className="hidden sm:inline">Transactions</span>
             </TabsTrigger>
-            <TabsTrigger value="rewards">
+            <TabsTrigger value="rewards" className="text-xs md:text-sm">
               <Award className="h-4 w-4 mr-2" />
-              Rewards
+              <span className="hidden sm:inline">Rewards</span>
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="orders" className="mt-6">
-            <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-4">Order History</h3>
+            <Card className="p-4 md:p-6">
+              <h3 className="text-base md:text-lg font-semibold mb-4">Order History</h3>
               {orders.length === 0 ? (
                 <div className="text-center py-8">
                   <ShoppingBag className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
@@ -320,16 +311,16 @@ export default function AccountPage() {
                   {orders.map((order) => (
                     <div
                       key={order.id}
-                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                      className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors gap-3"
                     >
                       <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <p className="font-medium">{order.service_type}</p>
-                          <Badge variant={getStatusColor(order.delivery_status)}>
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <p className="font-medium text-sm md:text-base">{order.service_type}</p>
+                          <Badge variant={getStatusColor(order.delivery_status)} className="text-xs">
                             {order.delivery_status}
                           </Badge>
                         </div>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-xs md:text-sm text-muted-foreground">
                           {new Date(order.created_at).toLocaleDateString()} at{" "}
                           {new Date(order.created_at).toLocaleTimeString()}
                         </p>
@@ -338,16 +329,16 @@ export default function AccountPage() {
                             onClick={() => router.push(`/orders/${order.id}/review`)}
                             size="sm"
                             variant="outline"
-                            className="mt-2"
+                            className="mt-2 text-xs"
                           >
-                            <Star className="h-4 w-4 mr-2" />
+                            <Star className="h-3 w-3 md:h-4 md:w-4 mr-2" />
                             Leave Review
                           </Button>
                         )}
                       </div>
-                      <div className="text-right">
-                        <p className="font-bold">${order.total_amount.toFixed(2)}</p>
-                        <Badge variant={getStatusColor(order.payment_status)} className="mt-1">
+                      <div className="text-left sm:text-right">
+                        <p className="font-bold text-base md:text-lg">${order.total_amount.toFixed(2)}</p>
+                        <Badge variant={getStatusColor(order.payment_status)} className="mt-1 text-xs">
                           {order.payment_status}
                         </Badge>
                       </div>
@@ -359,8 +350,8 @@ export default function AccountPage() {
           </TabsContent>
 
           <TabsContent value="transactions" className="mt-6">
-            <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-4">Transaction History</h3>
+            <Card className="p-4 md:p-6">
+              <h3 className="text-base md:text-lg font-semibold mb-4">Transaction History</h3>
               {transactions.length === 0 ? (
                 <div className="text-center py-8">
                   <Receipt className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
@@ -378,14 +369,14 @@ export default function AccountPage() {
                   {transactions.map((tx) => (
                     <div
                       key={tx.id}
-                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                      className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors gap-3"
                     >
                       <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <p className="font-medium">{tx.cryptocurrency} Deposit</p>
-                          <Badge variant={getStatusColor(tx.status)}>{tx.status}</Badge>
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <p className="font-medium text-sm md:text-base">{tx.cryptocurrency} Deposit</p>
+                          <Badge variant={getStatusColor(tx.status)} className="text-xs">{tx.status}</Badge>
                         </div>
-                        <p className="text-sm text-muted-foreground font-mono">
+                        <p className="text-xs md:text-sm text-muted-foreground font-mono break-all">
                           {tx.transaction_hash.substring(0, 20)}...
                         </p>
                         <p className="text-xs text-muted-foreground mt-1">
@@ -393,8 +384,8 @@ export default function AccountPage() {
                           {new Date(tx.created_at).toLocaleTimeString()}
                         </p>
                       </div>
-                      <div className="text-right">
-                        <p className="font-bold text-green-600 dark:text-green-400">
+                      <div className="text-left sm:text-right">
+                        <p className="font-bold text-base md:text-lg text-green-600 dark:text-green-400">
                           +${tx.amount.toFixed(2)}
                         </p>
                       </div>
@@ -406,14 +397,14 @@ export default function AccountPage() {
           </TabsContent>
 
           <TabsContent value="rewards" className="mt-6">
-            <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-4">Loyalty Rewards</h3>
-              <div className="bg-primary/5 rounded-lg p-6 mb-6">
+            <Card className="p-4 md:p-6">
+              <h3 className="text-base md:text-lg font-semibold mb-4">Loyalty Rewards</h3>
+              <div className="bg-primary/5 rounded-lg p-4 md:p-6 mb-6">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-sm text-muted-foreground">Total Points</p>
-                  <p className="text-3xl font-bold">{loyaltyPoints}</p>
+                  <p className="text-2xl md:text-3xl font-bold">{loyaltyPoints}</p>
                 </div>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs md:text-sm text-muted-foreground">
                   Earn 1 point for every $1 spent on TrueServices!
                 </p>
               </div>
@@ -441,7 +432,7 @@ export default function AccountPage() {
                         </p>
                       </div>
                       <p
-                        className={`font-bold ${
+                        className={`font-bold text-sm md:text-base ${
                           reward.points_earned > 0
                             ? "text-green-600 dark:text-green-400"
                             : "text-red-600 dark:text-red-400"

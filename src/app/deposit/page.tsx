@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { Navigation } from "@/components/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useSession } from "@/lib/auth-client";
-import { Bitcoin, ArrowLeft, Check, Loader2, Copy, AlertCircle } from "lucide-react";
+import { Bitcoin, Check, Loader2, Copy, AlertCircle } from "lucide-react";
 import Image from "next/image";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -122,12 +123,19 @@ export default function DepositPage() {
       return;
     }
 
+    // Ensure we have a valid user ID
+    if (!session?.user?.id) {
+      toast.error("User session invalid. Please sign in again.");
+      router.push("/sign-in?redirect=/deposit");
+      return;
+    }
+
     setIsVerifying(true);
 
     try {
       const token = localStorage.getItem("bearer_token");
       
-      // Submit transaction for verification
+      // Submit transaction for verification with proper userId
       const response = await fetch("/api/transactions", {
         method: "POST",
         headers: {
@@ -135,7 +143,7 @@ export default function DepositPage() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          userId: session?.user?.id,
+          userId: parseInt(session.user.id as string), // Ensure userId is an integer
           cryptocurrency: selectedCrypto,
           amount: amountNum,
           transactionHash: transactionId.trim(),
@@ -197,23 +205,14 @@ export default function DepositPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted">
       {/* Navigation */}
-      <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Button variant="ghost" onClick={() => router.push("/")} className="gap-2">
-            <ArrowLeft className="h-4 w-4" />
-            Back to Home
-          </Button>
-          <h1 className="text-xl font-bold">Deposit Funds</h1>
-          <div className="w-24"></div>
-        </div>
-      </nav>
+      <Navigation />
 
-      <div className="container mx-auto px-4 py-12">
+      <div className="container mx-auto px-4 py-8 md:py-12">
         <div className="max-w-2xl mx-auto">
           {step === "select" && (
-            <Card className="p-8">
-              <h2 className="text-3xl font-bold mb-2">Select Cryptocurrency</h2>
-              <p className="text-muted-foreground mb-6">
+            <Card className="p-6 md:p-8">
+              <h2 className="text-2xl md:text-3xl font-bold mb-2">Select Cryptocurrency</h2>
+              <p className="text-muted-foreground mb-6 text-sm md:text-base">
                 Choose the cryptocurrency you want to deposit
               </p>
 
@@ -225,7 +224,7 @@ export default function DepositPage() {
                   </AlertDescription>
                 </Alert>
               ) : (
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {availableCryptos.map((crypto) => (
                     <Button
                       key={crypto}
@@ -243,18 +242,17 @@ export default function DepositPage() {
           )}
 
           {step === "scan" && (
-            <Card className="p-8">
+            <Card className="p-6 md:p-8">
               <Button
                 variant="ghost"
                 onClick={() => setStep("select")}
                 className="mb-4 -ml-2"
               >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back
+                ← Back
               </Button>
 
-              <h2 className="text-3xl font-bold mb-2 capitalize">Deposit {selectedCrypto}</h2>
-              <p className="text-muted-foreground mb-6">
+              <h2 className="text-2xl md:text-3xl font-bold mb-2 capitalize">Deposit {selectedCrypto}</h2>
+              <p className="text-muted-foreground mb-6 text-sm md:text-base">
                 Scan the QR code or copy the address to send {selectedCrypto}
               </p>
 
@@ -286,7 +284,7 @@ export default function DepositPage() {
               <div className="mb-6">
                 <Label>Wallet Address</Label>
                 <div className="flex gap-2 mt-2">
-                  <Input value={currentAddress} readOnly className="font-mono text-sm" />
+                  <Input value={currentAddress} readOnly className="font-mono text-xs md:text-sm" />
                   <Button onClick={() => copyToClipboard(currentAddress)} size="icon" variant="outline">
                     <Copy className="h-4 w-4" />
                   </Button>
@@ -305,7 +303,7 @@ export default function DepositPage() {
 
               <Alert variant="destructive" className="mb-6">
                 <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
+                <AlertDescription className="text-sm">
                   <strong>Important:</strong> Please double-check the address before sending. Cryptocurrency transactions are non-refundable. Make sure you're sending to the correct address.
                 </AlertDescription>
               </Alert>
@@ -334,7 +332,7 @@ export default function DepositPage() {
                     placeholder="Enter transaction hash"
                     value={transactionId}
                     onChange={(e) => setTransactionId(e.target.value)}
-                    className="mt-2 font-mono text-sm"
+                    className="mt-2 font-mono text-xs md:text-sm"
                   />
                   <p className="text-xs text-muted-foreground mt-1">
                     The transaction hash from your wallet
@@ -365,15 +363,15 @@ export default function DepositPage() {
           )}
 
           {step === "verify" && (
-            <Card className="p-8 text-center">
+            <Card className="p-6 md:p-8 text-center">
               <div className="w-16 h-16 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Check className="h-8 w-8 text-green-600 dark:text-green-400" />
               </div>
-              <h2 className="text-3xl font-bold mb-2">Transaction Submitted!</h2>
-              <p className="text-muted-foreground mb-6">
+              <h2 className="text-2xl md:text-3xl font-bold mb-2">Transaction Submitted!</h2>
+              <p className="text-muted-foreground mb-6 text-sm md:text-base">
                 Your transaction has been submitted for verification. You will be notified once it's approved and funds are credited to your account based on the USD conversion rate at the time of your transaction.
               </p>
-              <Button onClick={() => router.push("/account")} size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90">
+              <Button onClick={() => router.push("/account")} size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 w-full sm:w-auto">
                 Go to Account
               </Button>
             </Card>
