@@ -5,7 +5,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertCircle, ArrowLeft, ShoppingCart, DollarSign } from "lucide-react";
@@ -26,9 +25,19 @@ interface Product {
   updatedAt: string;
 }
 
+interface ProductVariant {
+  id: number;
+  productId: number;
+  denomination: number;
+  customerPrice: number;
+  adminCost: number;
+  stockQuantity: number;
+}
+
 export default function ProductsPage() {
   const { data: session } = useSession();
   const [products, setProducts] = useState<Product[]>([]);
+  const [variants, setVariants] = useState<ProductVariant[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -36,6 +45,7 @@ export default function ProductsPage() {
 
   useEffect(() => {
     fetchProducts();
+    fetchVariants();
     if (session?.user?.id) {
       fetchBalance();
     }
@@ -72,22 +82,25 @@ export default function ProductsPage() {
     }
   };
 
+  const fetchVariants = async () => {
+    try {
+      const response = await fetch("/api/product-variants?limit=100");
+      if (!response.ok) throw new Error("Failed to fetch variants");
+      const data = await response.json();
+      setVariants(data);
+    } catch (err) {
+      console.error("Failed to fetch variants:", err);
+    }
+  };
+
   const filteredProducts = products.filter((product) =>
     product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     product.description?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const groupedProducts = filteredProducts.reduce((acc, product) => {
-    if (!acc[product.category]) {
-      acc[product.category] = [];
-    }
-    acc[product.category].push(product);
-    return acc;
-  }, {} as Record<string, Product[]>);
-
-  const electronicsProducts = groupedProducts["electronics"] || [];
-  const accessoriesProducts = groupedProducts["accessories"] || [];
-  const giftCardsProducts = groupedProducts["gift_cards"] || [];
+  const getProductVariants = (productId: number) => {
+    return variants.filter(v => v.productId === productId);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20">
@@ -155,7 +168,7 @@ export default function ProductsPage() {
         </Button>
         <h1 className="text-4xl md:text-5xl font-bold mb-4">Our Products</h1>
         <p className="text-xl text-muted-foreground mb-6">
-          Browse our collection of premium products with exclusive discounts
+          Browse our collection of premium gift cards with exclusive discounts
         </p>
         <Input
           type="search"
@@ -178,7 +191,7 @@ export default function ProductsPage() {
 
         {loading ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
+            {[1, 2, 3].map((i) => (
               <Card key={i}>
                 <CardHeader>
                   <Skeleton className="h-6 w-3/4" />
@@ -193,87 +206,83 @@ export default function ProductsPage() {
               </Card>
             ))}
           </div>
+        ) : filteredProducts.length === 0 ? (
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>No Products</AlertTitle>
+            <AlertDescription>
+              No products match your search criteria.
+            </AlertDescription>
+          </Alert>
         ) : (
-          <Tabs defaultValue="gift_cards" className="w-full">
-            <TabsList className="mb-8">
-              <TabsTrigger value="gift_cards">Gift Cards</TabsTrigger>
-              <TabsTrigger value="electronics">Electronics</TabsTrigger>
-              <TabsTrigger value="accessories">Accessories</TabsTrigger>
-              <TabsTrigger value="all">All Products</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="gift_cards" className="space-y-6">
-              {giftCardsProducts.length === 0 ? (
-                <Alert>
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>No Products</AlertTitle>
-                  <AlertDescription>
-                    No gift cards available at the moment.
-                  </AlertDescription>
-                </Alert>
-              ) : (
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {giftCardsProducts.map((product) => (
-                    <ProductCard key={product.id} product={product} />
-                  ))}
-                </div>
-              )}
-            </TabsContent>
-
-            <TabsContent value="electronics" className="space-y-6">
-              {electronicsProducts.length === 0 ? (
-                <Alert>
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>No Products</AlertTitle>
-                  <AlertDescription>
-                    No electronics products available at the moment.
-                  </AlertDescription>
-                </Alert>
-              ) : (
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {electronicsProducts.map((product) => (
-                    <ProductCard key={product.id} product={product} />
-                  ))}
-                </div>
-              )}
-            </TabsContent>
-
-            <TabsContent value="accessories" className="space-y-6">
-              {accessoriesProducts.length === 0 ? (
-                <Alert>
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>No Products</AlertTitle>
-                  <AlertDescription>
-                    No accessories products available at the moment.
-                  </AlertDescription>
-                </Alert>
-              ) : (
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {accessoriesProducts.map((product) => (
-                    <ProductCard key={product.id} product={product} />
-                  ))}
-                </div>
-              )}
-            </TabsContent>
-
-            <TabsContent value="all" className="space-y-6">
-              {filteredProducts.length === 0 ? (
-                <Alert>
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>No Products</AlertTitle>
-                  <AlertDescription>
-                    No products match your search criteria.
-                  </AlertDescription>
-                </Alert>
-              ) : (
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredProducts.map((product) => (
-                    <ProductCard key={product.id} product={product} />
-                  ))}
-                </div>
-              )}
-            </TabsContent>
-          </Tabs>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredProducts.map((product) => {
+              const productVariants = getProductVariants(product.id);
+              return (
+                <Card key={product.id} className={`${!product.isAvailable ? "opacity-60" : ""} border-border/40 bg-card/50 backdrop-blur hover:shadow-lg hover:shadow-primary/5 transition-all`}>
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <CardTitle className="text-xl">{product.name}</CardTitle>
+                      <Badge variant={product.isAvailable ? "default" : "secondary"} className="bg-primary/20 text-primary hover:bg-primary/30">
+                        {product.isAvailable ? "In Stock" : "Out of Stock"}
+                      </Badge>
+                    </div>
+                    <Badge className="w-fit bg-primary text-primary-foreground font-bold">
+                      30% OFF - BEST SELLER
+                    </Badge>
+                    <CardDescription className="text-muted-foreground">{product.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {product.imageUrl && (
+                      <div className="relative h-48 w-full rounded-md overflow-hidden bg-muted/30">
+                        <Image
+                          src={product.imageUrl}
+                          alt={product.name}
+                          fill
+                          className="object-contain p-4"
+                          unoptimized
+                        />
+                      </div>
+                    )}
+                    
+                    {/* Display variants */}
+                    {productVariants.length > 0 && (
+                      <div className="space-y-2">
+                        <p className="text-sm font-semibold text-muted-foreground">Available Values:</p>
+                        <div className="grid grid-cols-2 gap-2">
+                          {productVariants.map((variant) => (
+                            <div key={variant.id} className="p-3 bg-muted/50 rounded-lg border border-border">
+                              <div className="text-sm font-bold">${variant.denomination}</div>
+                              <div className="text-xs text-muted-foreground line-through">${variant.denomination}</div>
+                              <div className="text-lg font-bold text-primary">${variant.customerPrice.toFixed(2)}</div>
+                              <div className="text-xs text-muted-foreground">Stock: {variant.stockQuantity}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div className="flex items-center justify-between pt-2 border-t">
+                      <span className="text-sm text-muted-foreground">Total Stock:</span>
+                      <span className="text-lg font-bold text-primary">{product.stockQuantity}</span>
+                    </div>
+                  </CardContent>
+                  <CardFooter>
+                    <Button
+                      asChild
+                      className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+                      disabled={!product.isAvailable}
+                    >
+                      <Link href={`/products/${product.id}`}>
+                        <ShoppingCart className="mr-2 h-4 w-4" />
+                        View Details & Purchase
+                      </Link>
+                    </Button>
+                  </CardFooter>
+                </Card>
+              );
+            })}
+          </div>
         )}
       </section>
 
@@ -285,68 +294,5 @@ export default function ProductsPage() {
         </div>
       </footer>
     </div>
-  );
-}
-
-function ProductCard({ product }: { product: Product }) {
-  // Calculate discount from product name or fetch from profit margins API
-  const isSpeedway = product.name.toLowerCase().includes("speedway");
-  const discountPercentage = isSpeedway ? 30 : 0;
-  
-  return (
-    <Card className={`${!product.isAvailable ? "opacity-60" : ""} border-border/40 bg-card/50 backdrop-blur hover:shadow-lg hover:shadow-primary/5 transition-all`}>
-      <CardHeader>
-        <div className="flex items-start justify-between">
-          <CardTitle className="text-xl">{product.name}</CardTitle>
-          <Badge variant={product.isAvailable ? "default" : "secondary"} className="bg-primary/20 text-primary hover:bg-primary/30">
-            {product.isAvailable ? "In Stock" : "Out of Stock"}
-          </Badge>
-        </div>
-        {discountPercentage > 0 && (
-          <Badge className="w-fit bg-primary text-primary-foreground">
-            {discountPercentage}% OFF - You Save Big!
-          </Badge>
-        )}
-        <CardDescription className="text-muted-foreground line-clamp-2">{product.description}</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {product.imageUrl && (
-          <div className="relative h-40 w-full rounded-md overflow-hidden bg-muted/30">
-            <Image
-              src={product.imageUrl}
-              alt={product.name}
-              fill
-              className="object-cover"
-              unoptimized
-            />
-          </div>
-        )}
-        <div className="flex items-center justify-between">
-          {discountPercentage > 0 ? (
-            <div className="flex flex-col">
-              <span className="text-sm text-muted-foreground line-through">${product.price.toFixed(2)}</span>
-              <span className="text-2xl font-bold text-primary">${(product.price * (1 - discountPercentage / 100)).toFixed(2)}</span>
-            </div>
-          ) : (
-            <span className="text-2xl font-bold text-primary">${product.price.toFixed(2)}</span>
-          )}
-          <span className="text-sm text-muted-foreground">
-            Stock: {product.stockQuantity}
-          </span>
-        </div>
-      </CardContent>
-      <CardFooter>
-        <Button
-          asChild
-          className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
-          disabled={!product.isAvailable}
-        >
-          <Link href={`/products/${product.id}`}>
-            <ShoppingCart className="mr-2 h-4 w-4" />
-            View Details
-          </Link>
-        </Button>
-      </CardFooter>
-    </Card>
   );
 }

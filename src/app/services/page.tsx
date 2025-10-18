@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertCircle, ArrowLeft, ExternalLink, ShoppingCart, UtensilsCrossed, Sparkles } from "lucide-react";
+import { AlertCircle, ArrowLeft, ExternalLink, ShoppingCart, UtensilsCrossed, Sparkles, ArrowRight } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import Image from "next/image";
 
@@ -170,10 +170,10 @@ export default function ServicesPage() {
                   </CardContent>
                   <CardFooter className="relative bg-muted/30 backdrop-blur">
                     <Button asChild size="lg" className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg shadow-primary/20">
-                      <Link href="/services/food4less">
+                      <Link href="/food-services">
                         <ShoppingCart className="mr-2 h-5 w-5" />
                         Explore Food Services
-                        <ArrowLeft className="ml-2 h-5 w-5 rotate-180" />
+                        <ArrowRight className="ml-2 h-5 w-5" />
                       </Link>
                     </Button>
                   </CardFooter>

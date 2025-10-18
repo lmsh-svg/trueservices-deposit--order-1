@@ -182,7 +182,7 @@ export default function Home() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button asChild size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90">
-              <Link href="/services">Browse Services</Link>
+              <Link href="/food-services">Browse Food Services</Link>
             </Button>
             <Button asChild size="lg" variant="outline" className="border-primary/40 hover:bg-primary/10">
               <Link href="/products">View Products</Link>
