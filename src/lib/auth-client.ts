@@ -1,4 +1,3 @@
-
 "use client"
 import { createAuthClient } from "better-auth/react"
 import { useEffect, useState } from "react"
@@ -11,7 +10,6 @@ export const authClient = createAuthClient({
       },
       onSuccess: (ctx) => {
           const authToken = ctx.response.headers.get("set-auth-token")
-          // Store the token securely (e.g., in localStorage)
           if(authToken){
             localStorage.setItem("bearer_token", authToken);
           }
@@ -19,37 +17,65 @@ export const authClient = createAuthClient({
   }
 });
 
-type SessionData = ReturnType<typeof authClient.useSession>
+type SessionData = {
+   data: any;
+   isPending: boolean;
+   error: any;
+   refetch: () => void;
+}
 
 export function useSession(): SessionData {
    const [session, setSession] = useState<any>(null);
    const [isPending, setIsPending] = useState(true);
    const [error, setError] = useState<any>(null);
 
-   const refetch = () => {
-      setIsPending(true);
-      setError(null);
-      fetchSession();
-   };
-
    const fetchSession = async () => {
       try {
-         const res = await authClient.getSession({
-            fetchOptions: {
-               auth: {
-                  type: "Bearer",
-                  token: typeof window !== 'undefined' ? localStorage.getItem("bearer_token") || "" : "",
-               },
+         const token = typeof window !== 'undefined' ? localStorage.getItem("bearer_token") : null;
+         
+         if (!token) {
+            setSession(null);
+            setError(null);
+            setIsPending(false);
+            return;
+         }
+
+         // Use custom session endpoint instead of Better Auth
+         const res = await fetch('/api/auth/session', {
+            method: 'GET',
+            headers: {
+               'Authorization': `Bearer ${token}`,
             },
          });
-         setSession(res.data);
-         setError(null);
+
+         if (!res.ok) {
+            setSession(null);
+            setError({ message: 'Session expired or invalid' });
+            setIsPending(false);
+            return;
+         }
+
+         const data = await res.json();
+         
+         if (data.success && data.user) {
+            setSession({ user: data.user, session: data.session });
+            setError(null);
+         } else {
+            setSession(null);
+            setError({ message: 'Invalid session' });
+         }
       } catch (err) {
          setSession(null);
          setError(err);
       } finally {
          setIsPending(false);
       }
+   };
+
+   const refetch = () => {
+      setIsPending(true);
+      setError(null);
+      fetchSession();
    };
 
    useEffect(() => {

@@ -309,12 +309,6 @@ export default function FoodServices() {
                 Start Saving Now
               </Link>
             </Button>
-            <Button asChild size="sm" variant="outline" className="border-zinc-700 hover:bg-zinc-900 text-zinc-400 hover:text-white px-4 py-4 text-sm font-medium">
-              <Link href="#how-it-works">
-                <Info className="mr-2 h-4 w-4" />
-                How It Works
-              </Link>
-            </Button>
           </div>
         </div>
       </section>
@@ -345,7 +339,7 @@ export default function FoodServices() {
               {/* Cart Screenshot Image - Outside Card */}
               <div>
                 <p className="text-sm text-zinc-400 mb-3 italic">Example:</p>
-                <div className="relative w-full h-[560px] rounded-lg overflow-hidden shadow-2xl border border-zinc-800">
+                <div className="relative w-full h-[560px] rounded-lg overflow-hidden shadow-2xl">
                   <Image
                     src="https://files.jotform.com/jufs/TRUEServiceSupport/form_files/DD-2.682168432a3f96.74677364.png?md5=TWfuQePJMp7A_osAPJ97VQ&expires=1760753269"
                     alt="Cart Screenshot Example"
@@ -367,7 +361,7 @@ export default function FoodServices() {
               {/* Checkout Screenshot Image - Outside Card */}
               <div>
                 <p className="text-sm text-zinc-400 mb-3 italic">Example:</p>
-                <div className="relative w-full h-[560px] rounded-lg overflow-hidden shadow-2xl border border-zinc-800">
+                <div className="relative w-full h-[560px] rounded-lg overflow-hidden shadow-2xl">
                   <Image
                     src="https://files.jotform.com/jufs/TRUEServiceSupport/form_files/DDS-2.68216812cd78e2.99249574.png?md5=SPJFI0HPsANa_kdQAEYg-w&expires=1760753270"
                     alt="Checkout Total Screenshot Example"
