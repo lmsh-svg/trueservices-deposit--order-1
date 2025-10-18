@@ -3,12 +3,11 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Navigation } from "@/components/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertCircle, ShoppingCart } from "lucide-react";
+import { AlertCircle, ArrowLeft, ShoppingCart, DollarSign } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
 import { useSession } from "@/lib/auth-client";
@@ -42,11 +41,32 @@ export default function ProductsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [balance, setBalance] = useState<number>(0);
 
   useEffect(() => {
     fetchProducts();
     fetchVariants();
+    if (session?.user?.id) {
+      fetchBalance();
+    }
   }, [session]);
+
+  const fetchBalance = async () => {
+    try {
+      const token = localStorage.getItem("bearer_token");
+      const response = await fetch(`/api/users?id=${session?.user?.id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setBalance(data.balance || 0);
+      }
+    } catch (error) {
+      console.error("Failed to fetch balance:", error);
+    }
+  };
 
   const fetchProducts = async () => {
     try {
@@ -85,12 +105,69 @@ export default function ProductsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20">
       {/* Navigation */}
-      <Navigation />
+      <nav className="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-3">
+            <Image
+              src="https://files.jotform.com/jufs/TRUEServiceSupport/form_files/trueservicestransparent.67f010b8679bd1.07484258.png?md5=iFg1NnHrukcAtXkiT2Ci5Q&expires=1760754468"
+              alt="TrueServices Logo"
+              width={50}
+              height={50}
+              className="object-contain"
+              unoptimized
+            />
+            <span className="text-2xl font-bold tracking-tight text-foreground">
+              True<span className="text-primary">Services</span>
+            </span>
+          </Link>
+          <div className="flex items-center gap-6">
+            <Link href="/services" className="text-sm font-medium hover:text-primary transition-colors">
+              Services
+            </Link>
+            <Link href="/products" className="text-sm font-medium text-primary transition-colors">
+              Products
+            </Link>
+            {session?.user ? (
+              <>
+                <Link href="/account" className="text-sm font-medium hover:text-primary transition-colors">
+                  Account
+                </Link>
+                <Button asChild variant="outline" size="sm" className="gap-2">
+                  <Link href="/deposit">
+                    <DollarSign className="h-4 w-4" />
+                    {balance.toFixed(2)} credits
+                  </Link>
+                </Button>
+                {session.user.role === "admin" && (
+                  <Button asChild size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90">
+                    <Link href="/admin">Admin</Link>
+                  </Button>
+                )}
+              </>
+            ) : (
+              <>
+                <Button asChild variant="ghost" size="sm">
+                  <Link href="/sign-in">Sign In</Link>
+                </Button>
+                <Button asChild size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90">
+                  <Link href="/sign-up">Sign Up</Link>
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+      </nav>
 
       {/* Header */}
-      <section className="container mx-auto px-4 py-8 md:py-12">
-        <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">Our Products</h1>
-        <p className="text-lg md:text-xl text-muted-foreground mb-6">
+      <section className="container mx-auto px-4 py-12">
+        <Button variant="ghost" asChild className="mb-6">
+          <Link href="/">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Home
+          </Link>
+        </Button>
+        <h1 className="text-4xl md:text-5xl font-bold mb-4">Our Products</h1>
+        <p className="text-xl text-muted-foreground mb-6">
           Browse our collection of premium gift cards with exclusive discounts
         </p>
         <Input
@@ -103,7 +180,7 @@ export default function ProductsPage() {
       </section>
 
       {/* Products Content */}
-      <section className="container mx-auto px-4 pb-12 md:pb-20">
+      <section className="container mx-auto px-4 pb-20">
         {error && (
           <Alert variant="destructive" className="mb-6">
             <AlertCircle className="h-4 w-4" />
@@ -113,7 +190,7 @@ export default function ProductsPage() {
         )}
 
         {loading ? (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3].map((i) => (
               <Card key={i}>
                 <CardHeader>
@@ -138,26 +215,26 @@ export default function ProductsPage() {
             </AlertDescription>
           </Alert>
         ) : (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredProducts.map((product) => {
               const productVariants = getProductVariants(product.id);
               return (
                 <Card key={product.id} className={`${!product.isAvailable ? "opacity-60" : ""} border-border/40 bg-card/50 backdrop-blur hover:shadow-lg hover:shadow-primary/5 transition-all`}>
                   <CardHeader>
-                    <div className="flex items-start justify-between gap-2">
-                      <CardTitle className="text-lg md:text-xl">{product.name}</CardTitle>
-                      <Badge variant={product.isAvailable ? "default" : "secondary"} className="bg-primary/20 text-primary hover:bg-primary/30 text-xs">
+                    <div className="flex items-start justify-between">
+                      <CardTitle className="text-xl">{product.name}</CardTitle>
+                      <Badge variant={product.isAvailable ? "default" : "secondary"} className="bg-primary/20 text-primary hover:bg-primary/30">
                         {product.isAvailable ? "In Stock" : "Out of Stock"}
                       </Badge>
                     </div>
-                    <Badge className="w-fit bg-primary text-primary-foreground font-bold text-xs">
+                    <Badge className="w-fit bg-primary text-primary-foreground font-bold">
                       30% OFF - BEST SELLER
                     </Badge>
-                    <CardDescription className="text-muted-foreground text-sm">{product.description}</CardDescription>
+                    <CardDescription className="text-muted-foreground">{product.description}</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     {product.imageUrl && (
-                      <div className="relative h-40 md:h-48 w-full rounded-md overflow-hidden bg-muted/30">
+                      <div className="relative h-48 w-full rounded-md overflow-hidden bg-muted/30">
                         <Image
                           src={product.imageUrl}
                           alt={product.name}
@@ -174,10 +251,10 @@ export default function ProductsPage() {
                         <p className="text-sm font-semibold text-muted-foreground">Available Values:</p>
                         <div className="grid grid-cols-2 gap-2">
                           {productVariants.map((variant) => (
-                            <div key={variant.id} className="p-2 md:p-3 bg-muted/50 rounded-lg border border-border">
-                              <div className="text-xs md:text-sm font-bold">${variant.denomination}</div>
+                            <div key={variant.id} className="p-3 bg-muted/50 rounded-lg border border-border">
+                              <div className="text-sm font-bold">${variant.denomination}</div>
                               <div className="text-xs text-muted-foreground line-through">${variant.denomination}</div>
-                              <div className="text-base md:text-lg font-bold text-primary">${variant.customerPrice.toFixed(2)}</div>
+                              <div className="text-lg font-bold text-primary">${variant.customerPrice.toFixed(2)}</div>
                               <div className="text-xs text-muted-foreground">Stock: {variant.stockQuantity}</div>
                             </div>
                           ))}
@@ -193,7 +270,7 @@ export default function ProductsPage() {
                   <CardFooter>
                     <Button
                       asChild
-                      className="w-full bg-primary text-primary-foreground hover:bg-primary/90 text-sm"
+                      className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
                       disabled={!product.isAvailable}
                     >
                       <Link href={`/products/${product.id}`}>
@@ -210,7 +287,7 @@ export default function ProductsPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border/40 bg-muted/20 backdrop-blur mt-12 md:mt-20">
+      <footer className="border-t border-border/40 bg-muted/20 backdrop-blur mt-20">
         <div className="container mx-auto px-4 py-8 text-center text-sm text-muted-foreground">
           <p>&copy; 2024 TrueServices. All rights reserved.</p>
           <p className="mt-2">Built on Trust. Powered by Experience.</p>
