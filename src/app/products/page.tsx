@@ -155,7 +155,7 @@ export default function ProductsPage() {
         </Button>
         <h1 className="text-4xl md:text-5xl font-bold mb-4">Our Products</h1>
         <p className="text-xl text-muted-foreground mb-6">
-          Browse our collection of premium products
+          Browse our collection of premium products with exclusive discounts
         </p>
         <Input
           type="search"
@@ -289,7 +289,9 @@ export default function ProductsPage() {
 }
 
 function ProductCard({ product }: { product: Product }) {
-  const discountPercentage = product.name === "Speedway Gas" ? 30 : 0;
+  // Calculate discount from product name or fetch from profit margins API
+  const isSpeedway = product.name.toLowerCase().includes("speedway");
+  const discountPercentage = isSpeedway ? 30 : 0;
   
   return (
     <Card className={`${!product.isAvailable ? "opacity-60" : ""} border-border/40 bg-card/50 backdrop-blur hover:shadow-lg hover:shadow-primary/5 transition-all`}>
@@ -302,7 +304,7 @@ function ProductCard({ product }: { product: Product }) {
         </div>
         {discountPercentage > 0 && (
           <Badge className="w-fit bg-primary text-primary-foreground">
-            -{discountPercentage}% OFF
+            {discountPercentage}% OFF - You Save Big!
           </Badge>
         )}
         <CardDescription className="text-muted-foreground line-clamp-2">{product.description}</CardDescription>
@@ -320,7 +322,14 @@ function ProductCard({ product }: { product: Product }) {
           </div>
         )}
         <div className="flex items-center justify-between">
-          <span className="text-2xl font-bold text-primary">${product.price.toFixed(2)}</span>
+          {discountPercentage > 0 ? (
+            <div className="flex flex-col">
+              <span className="text-sm text-muted-foreground line-through">${product.price.toFixed(2)}</span>
+              <span className="text-2xl font-bold text-primary">${(product.price * (1 - discountPercentage / 100)).toFixed(2)}</span>
+            </div>
+          ) : (
+            <span className="text-2xl font-bold text-primary">${product.price.toFixed(2)}</span>
+          )}
           <span className="text-sm text-muted-foreground">
             Stock: {product.stockQuantity}
           </span>
