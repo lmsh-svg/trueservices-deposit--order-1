@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1760754155043,
+      "tag": "0000_minor_tusk",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1760754560590,
+      "tag": "0001_exotic_shaman",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1760755310640,
+      "tag": "0002_loud_storm",
+      "breakpoints": true
+    }
+  ]
+}
