@@ -216,28 +216,28 @@ export default function FoodServicesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary via-primary/95 to-primary/80">
-      {/* Top Navigation Bar - Minimal True Services Link */}
-      <div className="bg-black/20 backdrop-blur-sm border-b border-white/10">
-        <div className="container mx-auto px-4 py-2 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 opacity-60 hover:opacity-100 transition-opacity">
+    <div className="min-h-screen bg-black">
+      {/* Top Navigation Bar - Ultra Dark */}
+      <div className="bg-zinc-950/80 backdrop-blur-xl border-b border-zinc-800/50">
+        <div className="container mx-auto px-4 py-2.5 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2 text-zinc-500 hover:text-zinc-300 transition-colors">
             <Image
               src="https://files.jotform.com/jufs/TRUEServiceSupport/form_files/trueservicestransparent.67f010b8679bd1.07484258.png?md5=iFg1NnHrukcAtXkiT2Ci5Q&expires=1760754468"
               alt="TrueServices"
-              width={24}
-              height={24}
-              className="object-contain"
+              width={20}
+              height={20}
+              className="object-contain opacity-60"
               unoptimized
             />
-            <span className="text-xs text-white font-medium">powered by TrueServices</span>
+            <span className="text-xs font-medium">TrueServices</span>
           </Link>
           <div className="flex items-center gap-4">
             {session?.user ? (
-              <Link href="/account" className="text-xs text-white/80 hover:text-white transition-colors">
-                My Account
+              <Link href="/account" className="text-xs text-zinc-400 hover:text-zinc-200 transition-colors font-medium">
+                Account
               </Link>
             ) : (
-              <Link href="/sign-in" className="text-xs text-white/80 hover:text-white transition-colors">
+              <Link href="/sign-in" className="text-xs text-zinc-400 hover:text-zinc-200 transition-colors font-medium">
                 Sign In
               </Link>
             )}
@@ -245,158 +245,97 @@ export default function FoodServicesPage() {
         </div>
       </div>
 
-      {/* Hero Banner - Food For Less Branding */}
-      <section className="relative overflow-hidden py-16 md:py-24">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjA1IiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-30" />
+      {/* Hero Banner - Premium Dark Design */}
+      <section className="relative overflow-hidden bg-gradient-to-b from-zinc-950 via-zinc-900 to-black border-b border-zinc-800/50">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent opacity-40" />
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjAyIiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-50" />
         
-        <div className="container mx-auto px-4 text-center relative">
-          <div className="inline-block mb-6 px-6 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
-            <p className="text-white/90 text-sm font-semibold tracking-wide">🔥 LIMITED TIME OFFER</p>
+        <div className="container mx-auto px-4 py-16 text-center relative">
+          <div className="inline-flex items-center gap-2 mb-4 px-4 py-1.5 bg-primary/20 rounded-full border border-primary/30 backdrop-blur-sm">
+            <Sparkles className="h-3.5 w-3.5 text-primary" />
+            <span className="text-primary text-xs font-extrabold tracking-wider uppercase">Limited Time</span>
           </div>
           
-          <h1 className="text-6xl md:text-8xl font-black text-white mb-6 tracking-tighter drop-shadow-2xl">
-            FOOD<span className="text-white/80">4</span>LESS
+          <h1 className="text-6xl md:text-8xl font-black text-white mb-4 tracking-tighter">
+            FOOD<span className="text-primary">4</span>LESS
           </h1>
           
-          <p className="text-2xl md:text-3xl text-white/95 font-bold mb-6 drop-shadow-lg">
-            Save BIG on Every Food Delivery Order
+          <p className="text-xl md:text-2xl text-zinc-300 font-bold mb-8">
+            Massive Discounts on Every Food Delivery
           </p>
           
-          <div className="flex flex-wrap items-center justify-center gap-4 mb-8">
-            <Badge className="bg-white text-primary px-6 py-3 text-xl font-black shadow-2xl hover:scale-105 transition-transform">
-              <Sparkles className="mr-2 h-5 w-5" />
-              Up to 70% OFF
+          <div className="flex flex-wrap items-center justify-center gap-4">
+            <Badge className="bg-primary text-primary-foreground px-6 py-2.5 text-xl font-black shadow-2xl shadow-primary/20">
+              UP TO 70% OFF
             </Badge>
-            <Badge className="bg-black/30 text-white border-white/30 px-6 py-3 text-lg font-bold backdrop-blur">
-              All Major Platforms
+            <Badge className="bg-zinc-800/80 text-zinc-200 border border-zinc-700 px-6 py-2.5 text-base font-bold backdrop-blur-sm">
+              45% Standard Discount
             </Badge>
           </div>
-          
-          <p className="text-white/80 text-lg max-w-2xl mx-auto">
-            Order from your favorite restaurants on DoorDash, Uber Eats, and more — we'll process it with our exclusive wholesale discounts!
-          </p>
         </div>
       </section>
 
-      {/* How It Works Section */}
-      <section className="bg-background py-16">
+      {/* How It Works Section - Ultra Compact */}
+      <section className="bg-zinc-950 py-8 border-b border-zinc-800/50">
         <div className="container mx-auto px-4">
-          <div className="max-w-5xl mx-auto">
-            <h2 className="text-4xl font-bold text-center mb-4">How It Works</h2>
-            <p className="text-center text-muted-foreground mb-12 text-lg">Follow these simple steps to get massive discounts on your food orders</p>
+          <div className="max-w-3xl mx-auto">
+            <h2 className="text-xl font-bold text-center mb-6 text-white">How It Works</h2>
             
-            <div className="grid md:grid-cols-2 gap-12 mb-12">
-              {/* Step 1: Cart Screenshot */}
-              <Card className="border-2 border-primary/20">
-                <CardHeader>
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-lg">1</div>
-                    <CardTitle className="text-2xl">Upload Cart Screenshot</CardTitle>
-                  </div>
-                  <CardDescription className="text-base">
-                    Open your DoorDash cart, ensure all items are visible, and take a screenshot. Upload it when placing your order.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="relative rounded-lg overflow-hidden border-2 border-border bg-muted">
-                      <Image
-                        src="https://files.jotform.com/jufs/TRUEServiceSupport/form_files/DD-2.682168432a3f96.74677364.png?md5=TWfuQePJMp7A_osAPJ97VQ&expires=1760753269"
-                        alt="Cart Screenshot Example"
-                        width={400}
-                        height={600}
-                        className="w-full h-auto object-contain"
-                        unoptimized
-                      />
-                    </div>
-                    <Alert>
-                      <Info className="h-4 w-4" />
-                      <AlertDescription className="text-sm">
-                        <strong>Example:</strong> Make sure all items, quantities, and subtotal are clearly visible in your screenshot.
-                      </AlertDescription>
-                    </Alert>
-                  </div>
-                </CardContent>
-              </Card>
+            <div className="space-y-3 mb-4">
+              {/* Step 1 */}
+              <div className="flex items-center gap-3 p-4 bg-zinc-900/50 rounded-lg border border-zinc-800/50">
+                <div className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm flex-shrink-0">1</div>
+                <div className="flex-1">
+                  <h3 className="font-bold text-sm text-white mb-1">Upload Cart Screenshot</h3>
+                  <p className="text-xs text-zinc-400">Show all items and quantities</p>
+                </div>
+                <div className="relative w-16 h-24 rounded border border-zinc-700 overflow-hidden flex-shrink-0">
+                  <Image
+                    src="https://files.jotform.com/jufs/TRUEServiceSupport/form_files/DD-2.682168432a3f96.74677364.png?md5=TWfuQePJMp7A_osAPJ97VQ&expires=1760753269"
+                    alt="Cart"
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
+                </div>
+              </div>
 
-              {/* Step 2: Checkout Screenshot */}
-              <Card className="border-2 border-primary/20">
-                <CardHeader>
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-lg">2</div>
-                    <CardTitle className="text-2xl">Upload Checkout Total</CardTitle>
-                  </div>
-                  <CardDescription className="text-base">
-                    Proceed to checkout, ensure the total (including fees and taxes) is visible, and take a screenshot.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="relative rounded-lg overflow-hidden border-2 border-border bg-muted">
-                      <Image
-                        src="https://files.jotform.com/jufs/TRUEServiceSupport/form_files/DDS-2.68216812cd78e2.99249574.png?md5=SPJFI0HPsANa_kdQAEYg-w&expires=1760753270"
-                        alt="Checkout Total Screenshot Example"
-                        width={400}
-                        height={600}
-                        className="w-full h-auto object-contain"
-                        unoptimized
-                      />
-                    </div>
-                    <Alert>
-                      <Info className="h-4 w-4" />
-                      <AlertDescription className="text-sm">
-                        <strong>Example:</strong> Capture the complete checkout screen showing the final total with all fees, taxes, and delivery charges.
-                      </AlertDescription>
-                    </Alert>
-                  </div>
-                </CardContent>
-              </Card>
+              {/* Step 2 */}
+              <div className="flex items-center gap-3 p-4 bg-zinc-900/50 rounded-lg border border-zinc-800/50">
+                <div className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm flex-shrink-0">2</div>
+                <div className="flex-1">
+                  <h3 className="font-bold text-sm text-white mb-1">Upload Checkout Total</h3>
+                  <p className="text-xs text-zinc-400">Include all fees and taxes</p>
+                </div>
+                <div className="relative w-16 h-24 rounded border border-zinc-700 overflow-hidden flex-shrink-0">
+                  <Image
+                    src="https://files.jotform.com/jufs/TRUEServiceSupport/form_files/DDS-2.68216812cd78e2.99249574.png?md5=SPJFI0HPsANa_kdQAEYg-w&expires=1760753270"
+                    alt="Checkout"
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
+                </div>
+              </div>
             </div>
 
-            {/* Important Notice */}
-            <Alert className="border-destructive/50 bg-destructive/10">
-              <AlertCircle className="h-5 w-5 text-destructive" />
-              <AlertTitle className="text-lg font-bold">Important Notice</AlertTitle>
-              <AlertDescription className="text-base mt-2">
-                <strong>Any attempt to falsify your total will be detected and may result in a permanent ban from our services.</strong> Please provide accurate screenshots to avoid delays in processing your order.
-              </AlertDescription>
-            </Alert>
-
-            {/* Tips */}
-            <div className="mt-8 bg-primary/5 border border-primary/20 rounded-lg p-6">
-              <h3 className="font-bold text-lg mb-3 flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-primary" />
-                Pro Tips for Best Results
-              </h3>
-              <ul className="space-y-2 text-muted-foreground">
-                <li className="flex items-start gap-2">
-                  <span className="text-primary font-bold">•</span>
-                  <span>Take screenshots in a well-lit environment and ensure all text is legible</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-primary font-bold">•</span>
-                  <span>Use the DoorDash app, not the website, for most accurate screenshots</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-primary font-bold">•</span>
-                  <span>Make sure your device's battery/time indicators don't cover important information</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-primary font-bold">•</span>
-                  <span>Double-check that the total amount matches what you enter in the order form</span>
-                </li>
-              </ul>
+            {/* Compact Warning */}
+            <div className="flex items-start gap-2 p-3 bg-red-950/30 border border-red-900/50 rounded-lg">
+              <AlertCircle className="h-4 w-4 text-red-400 flex-shrink-0 mt-0.5" />
+              <p className="text-xs text-red-200">
+                <strong>Warning:</strong> Falsified screenshots result in permanent ban. Be accurate.
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Services Grid */}
-      <section className="bg-muted/30 py-16">
+      {/* Services Grid - Premium Dark Cards */}
+      <section className="bg-black py-12">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold mb-4">Available Delivery Services</h2>
-            <p className="text-xl text-muted-foreground">Choose your favorite platform and start saving today</p>
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-black text-white mb-2">Available Services</h2>
+            <p className="text-base text-zinc-400">Choose your platform and start saving</p>
           </div>
           
           {error && (
@@ -408,23 +347,24 @@ export default function FoodServicesPage() {
           )}
 
           {loading ? (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 max-w-6xl mx-auto">
               {[1, 2, 3, 4, 5, 6].map((i) => (
-                <Card key={i}>
+                <Card key={i} className="bg-zinc-900 border-zinc-800">
                   <CardHeader>
-                    <Skeleton className="h-6 w-3/4" />
+                    <Skeleton className="h-6 w-3/4 bg-zinc-800" />
                   </CardHeader>
                   <CardContent>
-                    <Skeleton className="h-48 w-full" />
+                    <Skeleton className="h-40 w-full bg-zinc-800" />
                   </CardContent>
-                  <CardFooter>
-                    <Skeleton className="h-10 w-full" />
+                  <CardFooter className="flex-col gap-2">
+                    <Skeleton className="h-10 w-full bg-zinc-800" />
+                    <Skeleton className="h-9 w-full bg-zinc-800" />
                   </CardFooter>
                 </Card>
               ))}
             </div>
           ) : services.length === 0 ? (
-            <Alert className="max-w-3xl mx-auto">
+            <Alert className="max-w-3xl mx-auto bg-zinc-900 border-zinc-800">
               <AlertCircle className="h-4 w-4" />
               <AlertTitle>No Services Available</AlertTitle>
               <AlertDescription>
@@ -432,23 +372,23 @@ export default function FoodServicesPage() {
               </AlertDescription>
             </Alert>
           ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 max-w-6xl mx-auto">
               {services.map((service) => (
                 <Card 
                   key={service.id} 
-                  className={`${!service.isAvailable ? "opacity-60" : "hover:shadow-2xl hover:shadow-primary/20 transition-all cursor-pointer border-2 hover:border-primary/50"}`}
+                  className={`group bg-gradient-to-b from-zinc-900 to-zinc-950 border-zinc-800 hover:border-primary/50 transition-all duration-300 ${!service.isAvailable ? "opacity-50" : "hover:shadow-2xl hover:shadow-primary/10"}`}
                 >
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <CardTitle className="text-xl">{service.name}</CardTitle>
-                      <Badge variant={service.isAvailable ? "default" : "secondary"} className="bg-primary text-primary-foreground">
-                        {service.isAvailable ? "Available" : "Unavailable"}
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between mb-2">
+                      <CardTitle className="text-lg font-black text-white">{service.name}</CardTitle>
+                      <Badge variant={service.isAvailable ? "default" : "secondary"} className="text-xs font-bold">
+                        {service.isAvailable ? "Active" : "Unavailable"}
                       </Badge>
                     </div>
-                    <CardDescription>{service.description}</CardDescription>
+                    <CardDescription className="text-xs text-zinc-400">{service.description}</CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="relative h-48 w-full rounded-lg overflow-hidden bg-gradient-to-br from-primary/10 to-background flex items-center justify-center border-2 border-border">
+                  <CardContent className="space-y-3 pb-3">
+                    <div className="relative h-36 w-full rounded-lg overflow-hidden bg-zinc-950 flex items-center justify-center border border-zinc-800 group-hover:border-primary/30 transition-colors">
                       {service.imageUrl ? (
                         <Image
                           src={service.imageUrl}
@@ -458,38 +398,37 @@ export default function FoodServicesPage() {
                           unoptimized
                         />
                       ) : (
-                        <ShoppingCart className="h-20 w-20 text-primary/30" />
+                        <ShoppingCart className="h-14 w-14 text-zinc-700" />
                       )}
-                      <div className="absolute top-3 right-3 bg-primary text-primary-foreground px-4 py-2 rounded-full font-black text-lg shadow-2xl animate-pulse">
+                      <div className="absolute top-2 right-2 bg-primary text-primary-foreground px-3 py-1 rounded-full font-black text-sm shadow-xl">
                         {service.discountPercentage}% OFF
                       </div>
                     </div>
                     {service.priceLimit && (
-                      <div className="flex items-center justify-center gap-2 p-3 bg-muted rounded-lg border border-border">
-                        <span className="text-sm font-medium text-muted-foreground">Maximum order:</span>
-                        <span className="text-lg font-bold text-primary">${service.priceLimit}</span>
+                      <div className="flex items-center justify-between px-3 py-1.5 bg-zinc-900 rounded-md border border-zinc-800 text-xs">
+                        <span className="text-zinc-500 font-medium">Max:</span>
+                        <span className="font-black text-primary">${service.priceLimit}</span>
                       </div>
                     )}
                   </CardContent>
-                  <CardFooter className="flex flex-col gap-2">
+                  <CardFooter className="flex flex-col gap-2 pt-0">
                     <Button
-                      className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-bold text-lg h-12"
+                      className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-black h-10 shadow-lg shadow-primary/20"
                       disabled={!service.isAvailable}
                       onClick={() => handleOrderClick(service)}
                     >
-                      <ShoppingCart className="mr-2 h-5 w-5" />
+                      <ShoppingCart className="mr-2 h-4 w-4" />
                       Order Now
                     </Button>
-                    {service.browseLink && (
-                      <Button
-                        variant="outline"
-                        className="w-full"
-                        onClick={() => handleBrowseClick(service)}
-                      >
-                        <ExternalLink className="mr-2 h-4 w-4" />
-                        Browse Menu
-                      </Button>
-                    )}
+                    <Button
+                      variant="outline"
+                      className="w-full h-9 text-sm font-bold border-zinc-700 hover:border-primary/50 hover:bg-primary/10 text-zinc-300 hover:text-white"
+                      onClick={() => handleBrowseClick(service)}
+                      disabled={!service.browseLink}
+                    >
+                      <ExternalLink className="mr-2 h-3.5 w-3.5" />
+                      Browse {service.name.split(' ')[0]}
+                    </Button>
                   </CardFooter>
                 </Card>
               ))}
@@ -500,10 +439,10 @@ export default function FoodServicesPage() {
 
       {/* Order Dialog */}
       <Dialog open={orderDialogOpen} onOpenChange={setOrderDialogOpen}>
-        <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto bg-zinc-950 border-zinc-800">
           <DialogHeader>
-            <DialogTitle className="text-2xl">Place Your Order - {selectedService?.name}</DialogTitle>
-            <DialogDescription className="text-base">
+            <DialogTitle className="text-2xl text-white">Place Your Order - {selectedService?.name}</DialogTitle>
+            <DialogDescription className="text-base text-zinc-400">
               Upload both screenshots and complete your order details below
             </DialogDescription>
           </DialogHeader>
@@ -511,10 +450,10 @@ export default function FoodServicesPage() {
           <div className="space-y-6 py-4">
             {/* Cart Screenshot Upload */}
             <div className="space-y-3">
-              <Label htmlFor="cartImage" className="text-base font-bold flex items-center gap-2">
-                📸 Cart Screenshot <span className="text-destructive">*</span>
+              <Label htmlFor="cartImage" className="text-base font-bold flex items-center gap-2 text-white">
+                📸 Cart Screenshot <span className="text-red-400">*</span>
               </Label>
-              <div className="border-2 border-dashed border-primary/30 rounded-lg p-4 text-center hover:border-primary/50 transition-colors bg-primary/5">
+              <div className="border-2 border-dashed border-zinc-700 rounded-lg p-4 text-center hover:border-primary/50 transition-colors bg-zinc-900/50">
                 <input
                   id="cartImage"
                   type="file"
@@ -539,8 +478,8 @@ export default function FoodServicesPage() {
                   ) : (
                     <div className="space-y-2 py-4">
                       <Upload className="h-10 w-10 mx-auto text-primary" />
-                      <p className="text-base font-medium">Click to upload cart screenshot</p>
-                      <p className="text-sm text-muted-foreground">PNG, JPG up to 5MB</p>
+                      <p className="text-base font-medium text-white">Click to upload cart screenshot</p>
+                      <p className="text-sm text-zinc-500">PNG, JPG up to 5MB</p>
                     </div>
                   )}
                 </label>
@@ -549,10 +488,10 @@ export default function FoodServicesPage() {
 
             {/* Checkout Screenshot Upload */}
             <div className="space-y-3">
-              <Label htmlFor="checkoutImage" className="text-base font-bold flex items-center gap-2">
-                📸 Checkout Total Screenshot <span className="text-destructive">*</span>
+              <Label htmlFor="checkoutImage" className="text-base font-bold flex items-center gap-2 text-white">
+                📸 Checkout Total Screenshot <span className="text-red-400">*</span>
               </Label>
-              <div className="border-2 border-dashed border-primary/30 rounded-lg p-4 text-center hover:border-primary/50 transition-colors bg-primary/5">
+              <div className="border-2 border-dashed border-zinc-700 rounded-lg p-4 text-center hover:border-primary/50 transition-colors bg-zinc-900/50">
                 <input
                   id="checkoutImage"
                   type="file"
@@ -577,8 +516,8 @@ export default function FoodServicesPage() {
                   ) : (
                     <div className="space-y-2 py-4">
                       <Upload className="h-10 w-10 mx-auto text-primary" />
-                      <p className="text-base font-medium">Click to upload checkout total screenshot</p>
-                      <p className="text-sm text-muted-foreground">PNG, JPG up to 5MB</p>
+                      <p className="text-base font-medium text-white">Click to upload checkout total screenshot</p>
+                      <p className="text-sm text-zinc-500">PNG, JPG up to 5MB</p>
                     </div>
                   )}
                 </label>
@@ -587,8 +526,8 @@ export default function FoodServicesPage() {
 
             {/* Order Amount */}
             <div className="space-y-2">
-              <Label htmlFor="orderAmount" className="text-base font-bold">
-                Order Total Amount (USD) <span className="text-destructive">*</span>
+              <Label htmlFor="orderAmount" className="text-base font-bold text-white">
+                Order Total Amount (USD) <span className="text-red-400">*</span>
               </Label>
               <Input
                 id="orderAmount"
@@ -597,11 +536,11 @@ export default function FoodServicesPage() {
                 placeholder="Enter total from checkout screenshot"
                 value={orderForm.orderAmount}
                 onChange={(e) => setOrderForm({ ...orderForm, orderAmount: e.target.value })}
-                className="text-lg h-12"
+                className="text-lg h-12 bg-zinc-900 border-zinc-700 text-white"
               />
               {selectedService && orderForm.orderAmount && (
-                <div className="flex items-center justify-between text-sm p-3 bg-primary/10 rounded-lg">
-                  <span className="font-medium">You save: ${(parseFloat(orderForm.orderAmount) * selectedService.discountPercentage / 100).toFixed(2)}</span>
+                <div className="flex items-center justify-between text-sm p-3 bg-primary/10 rounded-lg border border-primary/30">
+                  <span className="font-medium text-zinc-300">You save: ${(parseFloat(orderForm.orderAmount) * selectedService.discountPercentage / 100).toFixed(2)}</span>
                   <span className="font-bold text-primary text-lg">
                     You pay: ${(parseFloat(orderForm.orderAmount) * (1 - selectedService.discountPercentage / 100)).toFixed(2)}
                   </span>
@@ -611,8 +550,8 @@ export default function FoodServicesPage() {
 
             {/* Delivery Address */}
             <div className="space-y-2">
-              <Label htmlFor="deliveryAddress" className="text-base font-bold">
-                Delivery Address <span className="text-destructive">*</span>
+              <Label htmlFor="deliveryAddress" className="text-base font-bold text-white">
+                Delivery Address <span className="text-red-400">*</span>
               </Label>
               <Textarea
                 id="deliveryAddress"
@@ -620,13 +559,13 @@ export default function FoodServicesPage() {
                 value={orderForm.deliveryAddress}
                 onChange={(e) => setOrderForm({ ...orderForm, deliveryAddress: e.target.value })}
                 rows={3}
-                className="resize-none"
+                className="resize-none bg-zinc-900 border-zinc-700 text-white"
               />
             </div>
 
             {/* Special Instructions */}
             <div className="space-y-2">
-              <Label htmlFor="specialInstructions" className="text-base font-bold">
+              <Label htmlFor="specialInstructions" className="text-base font-bold text-white">
                 Special Instructions (Optional)
               </Label>
               <Textarea
@@ -635,13 +574,13 @@ export default function FoodServicesPage() {
                 value={orderForm.specialInstructions}
                 onChange={(e) => setOrderForm({ ...orderForm, specialInstructions: e.target.value })}
                 rows={2}
-                className="resize-none"
+                className="resize-none bg-zinc-900 border-zinc-700 text-white"
               />
             </div>
           </div>
 
           <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="outline" onClick={() => setOrderDialogOpen(false)}>
+            <Button variant="outline" onClick={() => setOrderDialogOpen(false)} className="border-zinc-700 hover:bg-zinc-900">
               Cancel
             </Button>
             <Button 
@@ -656,21 +595,20 @@ export default function FoodServicesPage() {
       </Dialog>
 
       {/* Footer */}
-      <footer className="bg-black/30 backdrop-blur border-t border-white/10 py-8">
+      <footer className="bg-zinc-950 backdrop-blur border-t border-zinc-800/50 py-6">
         <div className="container mx-auto px-4 text-center">
-          <Link href="/" className="inline-flex items-center gap-2 mb-4 opacity-60 hover:opacity-100 transition-opacity">
+          <Link href="/" className="inline-flex items-center gap-2 mb-3 text-zinc-500 hover:text-zinc-300 transition-colors">
             <Image
               src="https://files.jotform.com/jufs/TRUEServiceSupport/form_files/trueservicestransparent.67f010b8679bd1.07484258.png?md5=iFg1NnHrukcAtXkiT2Ci5Q&expires=1760754468"
               alt="TrueServices"
-              width={32}
-              height={32}
-              className="object-contain"
+              width={24}
+              height={24}
+              className="object-contain opacity-50"
               unoptimized
             />
-            <span className="text-white font-bold">Back to TrueServices</span>
+            <span className="font-semibold text-sm">Back to TrueServices</span>
           </Link>
-          <p className="text-white/60 text-sm">&copy; 2024 Food4Less - Powered by TrueServices</p>
-          <p className="text-white/40 text-xs mt-2">Save more. Eat better.</p>
+          <p className="text-zinc-600 text-xs">&copy; 2024 Food4Less - Powered by TrueServices</p>
         </div>
       </footer>
     </div>
