@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { AlertCircle, ArrowLeft, ExternalLink, ShoppingCart, UtensilsCrossed, Sparkles, ArrowRight, Shield, Zap, Award } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import Image from "next/image";
+import { useSession } from "@/lib/auth-client";
 
 interface Service {
   id: number;
@@ -29,6 +30,7 @@ export default function ServicesPage() {
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { data: session, isPending } = useSession();
 
   useEffect(() => {
     fetchServices();
@@ -74,15 +76,31 @@ export default function ServicesPage() {
             <Link href="/products" className="text-sm font-medium hover:text-primary transition-colors">
               Products
             </Link>
-            <Link href="/deposit" className="text-sm font-medium hover:text-primary transition-colors">
-              Deposit
-            </Link>
-            <Link href="/account" className="text-sm font-medium hover:text-primary transition-colors">
-              Account
-            </Link>
-            <Button asChild size="sm">
-              <Link href="/admin">Admin</Link>
-            </Button>
+            {session?.user && (
+              <>
+                <Link href="/deposit" className="text-sm font-medium hover:text-primary transition-colors">
+                  Deposit
+                </Link>
+                <Link href="/account" className="text-sm font-medium hover:text-primary transition-colors">
+                  Account
+                </Link>
+                {session.user.role === "admin" && (
+                  <Button asChild size="sm">
+                    <Link href="/admin">Admin</Link>
+                  </Button>
+                )}
+              </>
+            )}
+            {!session?.user && !isPending && (
+              <>
+                <Button asChild variant="ghost" size="sm">
+                  <Link href="/sign-in">Sign In</Link>
+                </Button>
+                <Button asChild size="sm">
+                  <Link href="/sign-up">Sign Up</Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </nav>
