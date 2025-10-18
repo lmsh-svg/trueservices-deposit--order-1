@@ -11,11 +11,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
+import { toast } from "sonner";
 
 export default function SignInPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
-    email: "",
+    username: "",
     password: "",
     rememberMe: false,
   });
@@ -28,20 +29,34 @@ export default function SignInPage() {
     setLoading(true);
 
     try {
-      const { error } = await authClient.signIn.email({
-        email: formData.email,
+      // Try regular user email format first
+      let internalEmail = `${formData.username.toLowerCase()}@user.trueservices.local`;
+      
+      let { error } = await authClient.signIn.email({
+        email: internalEmail,
         password: formData.password,
         rememberMe: formData.rememberMe,
         callbackURL: "/account",
       });
 
+      // If failed, try admin email format
       if (error) {
-        setError("Invalid email or password. Please try again.");
-        setLoading(false);
-        return;
+        internalEmail = `${formData.username.toLowerCase()}@trueservices.local`;
+        const adminResult = await authClient.signIn.email({
+          email: internalEmail,
+          password: formData.password,
+          rememberMe: formData.rememberMe,
+          callbackURL: "/account",
+        });
+        
+        if (adminResult.error) {
+          setError("Invalid username or password. Please make sure you have created an account and try again.");
+          setLoading(false);
+          return;
+        }
       }
 
-      // Redirect will happen automatically via callbackURL
+      toast.success("Signed in successfully!");
       router.push("/account");
     } catch (err) {
       setError("An unexpected error occurred. Please try again.");
@@ -60,7 +75,7 @@ export default function SignInPage() {
           </div>
           <CardTitle className="text-2xl text-center">Sign In</CardTitle>
           <CardDescription className="text-center">
-            Enter your credentials to access your account
+            Enter your username and password to continue
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
@@ -73,15 +88,16 @@ export default function SignInPage() {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="username">Username</Label>
               <Input
-                id="email"
-                type="email"
-                placeholder="you@example.com"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                id="username"
+                type="text"
+                placeholder="Enter your username"
+                value={formData.username}
+                onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                 required
                 disabled={loading}
+                autoComplete="off"
               />
             </div>
 
@@ -95,6 +111,7 @@ export default function SignInPage() {
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 required
                 disabled={loading}
+                autoComplete="off"
               />
             </div>
 
@@ -130,7 +147,7 @@ export default function SignInPage() {
             <div className="text-sm text-center text-muted-foreground">
               Don't have an account?{" "}
               <Link href="/sign-up" className="text-primary hover:underline">
-                Sign up
+                Create one now
               </Link>
             </div>
 

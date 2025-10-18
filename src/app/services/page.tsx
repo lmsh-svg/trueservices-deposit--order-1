@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertCircle, ArrowLeft, ExternalLink, ShoppingCart, UtensilsCrossed, Sparkles, ArrowRight } from "lucide-react";
+import { AlertCircle, ArrowLeft, ExternalLink, ShoppingCart, UtensilsCrossed, Sparkles, ArrowRight, Shield, Zap, Award } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import Image from "next/image";
 
@@ -150,7 +150,7 @@ export default function ServicesPage() {
                       </div>
                       <Badge className="bg-primary text-primary-foreground px-4 py-2 text-sm font-bold animate-pulse">
                         <Sparkles className="h-4 w-4 mr-1" />
-                        Up to 70% OFF
+                        Up to 50% OFF
                       </Badge>
                     </div>
                   </CardHeader>
@@ -160,13 +160,24 @@ export default function ServicesPage() {
                         <div key={service.id} className="flex items-center gap-2 p-3 bg-card/50 rounded-lg border border-border/50">
                           <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                           <span className="text-sm font-medium">{service.name}</span>
-                          <Badge variant="outline" className="ml-auto text-xs">{service.discountPercentage}%</Badge>
+                          <Badge variant="outline" className="ml-auto text-xs">45%</Badge>
                         </div>
                       ))}
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      🎯 {foodDeliveryServices.length} services available • 🚀 Fast processing • ✨ Best prices guaranteed
-                    </p>
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-2">
+                        <Shield className="h-4 w-4 text-primary" />
+                        <span>{foodDeliveryServices.length} services available</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Zap className="h-4 w-4 text-primary" />
+                        <span>Fast processing</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Award className="h-4 w-4 text-primary" />
+                        <span>Best prices guaranteed</span>
+                      </div>
+                    </div>
                   </CardContent>
                   <CardFooter className="relative bg-muted/30 backdrop-blur">
                     <Button asChild size="lg" className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg shadow-primary/20">

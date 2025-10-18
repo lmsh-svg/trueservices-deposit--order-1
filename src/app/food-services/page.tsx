@@ -62,7 +62,23 @@ export default function FoodServicesPage() {
       const response = await fetch("/api/services?category=food_delivery&limit=100");
       if (!response.ok) throw new Error("Failed to fetch services");
       const data = await response.json();
-      setServices(data);
+      
+      // Sort services: UberEats first, then DoorDash, then GrubHub
+      const sortOrder = ['ubereats', 'doordash', 'grubhub'];
+      const sorted = data.sort((a: Service, b: Service) => {
+        const aKey = a.name.toLowerCase().replace(/\s+/g, '');
+        const bKey = b.name.toLowerCase().replace(/\s+/g, '');
+        
+        const aIndex = sortOrder.findIndex(key => aKey.includes(key));
+        const bIndex = sortOrder.findIndex(key => bKey.includes(key));
+        
+        if (aIndex === -1 && bIndex === -1) return 0;
+        if (aIndex === -1) return 1;
+        if (bIndex === -1) return -1;
+        return aIndex - bIndex;
+      });
+      
+      setServices(sorted);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
@@ -211,7 +227,9 @@ export default function FoodServicesPage() {
 
   const handleBrowseClick = (service: Service) => {
     if (service.browseLink) {
-      window.open(service.browseLink, '_blank');
+      window.open(service.browseLink, '_blank', 'noopener,noreferrer');
+    } else {
+      toast.error("Browse link not available for this service");
     }
   };
 
@@ -251,87 +269,117 @@ export default function FoodServicesPage() {
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjAyIiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-50" />
         
         <div className="container mx-auto px-4 py-16 text-center relative">
-          <div className="inline-flex items-center gap-2 mb-4 px-4 py-1.5 bg-primary/20 rounded-full border border-primary/30 backdrop-blur-sm">
-            <Sparkles className="h-3.5 w-3.5 text-primary" />
-            <span className="text-primary text-xs font-extrabold tracking-wider uppercase">Limited Time</span>
-          </div>
-          
-          <h1 className="text-6xl md:text-8xl font-black text-white mb-4 tracking-tighter">
-            FOOD<span className="text-primary">4</span>LESS
+          <h1 className="text-6xl md:text-8xl font-black text-white mb-6 tracking-tighter">
+            Get Your Food For <span className="text-primary">Less</span>
           </h1>
           
-          <p className="text-xl md:text-2xl text-zinc-300 font-bold mb-8">
-            Massive Discounts on Every Food Delivery
+          <p className="text-xl md:text-2xl text-zinc-300 font-bold mb-4">
+            Easy, Reliable, 100% True
+          </p>
+          
+          <p className="text-lg md:text-xl text-zinc-400 mb-10">
+            Save up to 50% on your next meal
           </p>
           
           <div className="flex flex-wrap items-center justify-center gap-4">
-            <Badge className="bg-primary text-primary-foreground px-6 py-2.5 text-xl font-black shadow-2xl shadow-primary/20">
-              UP TO 70% OFF
-            </Badge>
-            <Badge className="bg-zinc-800/80 text-zinc-200 border border-zinc-700 px-6 py-2.5 text-base font-bold backdrop-blur-sm">
-              45% Standard Discount
-            </Badge>
+            <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-6 text-lg font-black shadow-2xl shadow-primary/30">
+              <Link href="#services">
+                <ShoppingCart className="mr-2 h-5 w-5" />
+                Start Saving Now
+              </Link>
+            </Button>
+            <Button asChild size="lg" variant="outline" className="border-zinc-700 hover:bg-zinc-900 text-white px-8 py-6 text-lg font-bold">
+              <Link href="#how-it-works">
+                <Info className="mr-2 h-5 w-5" />
+                How It Works
+              </Link>
+            </Button>
           </div>
         </div>
       </section>
 
       {/* How It Works Section - Ultra Compact */}
-      <section className="bg-zinc-950 py-8 border-b border-zinc-800/50">
+      <section id="how-it-works" className="bg-zinc-950 py-12 border-b border-zinc-800/50">
         <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto">
-            <h2 className="text-xl font-bold text-center mb-6 text-white">How It Works</h2>
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-3xl font-black text-center mb-8 text-white">How It Works</h2>
             
-            <div className="space-y-3 mb-4">
+            <div className="space-y-6">
               {/* Step 1 */}
-              <div className="flex items-center gap-3 p-4 bg-zinc-900/50 rounded-lg border border-zinc-800/50">
-                <div className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm flex-shrink-0">1</div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-sm text-white mb-1">Upload Cart Screenshot</h3>
-                  <p className="text-xs text-zinc-400">Show all items and quantities</p>
-                </div>
-                <div className="relative w-16 h-24 rounded border border-zinc-700 overflow-hidden flex-shrink-0">
-                  <Image
-                    src="https://files.jotform.com/jufs/TRUEServiceSupport/form_files/DD-2.682168432a3f96.74677364.png?md5=TWfuQePJMp7A_osAPJ97VQ&expires=1760753269"
-                    alt="Cart"
-                    fill
-                    className="object-cover"
-                    unoptimized
-                  />
+              <div className="bg-zinc-900/80 rounded-xl p-6 border border-zinc-800/80">
+                <div className="flex flex-col md:flex-row items-start gap-6">
+                  <div className="flex-shrink-0">
+                    <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-black text-xl">1</div>
+                  </div>
+                  <div className="flex-1 space-y-3">
+                    <h3 className="text-xl font-black text-white">Upload Your Cart Screenshot</h3>
+                    <p className="text-base text-zinc-300 leading-relaxed">
+                      Take a clear screenshot of your cart showing all items, quantities, and item names. Make sure everything is visible and legible. This helps us verify your order accurately.
+                    </p>
+                    <ul className="text-sm text-zinc-400 space-y-1 pl-4">
+                      <li>• Show all food items in your cart</li>
+                      <li>• Include quantities and item names</li>
+                      <li>• Make sure the screenshot is clear and readable</li>
+                    </ul>
+                  </div>
+                  <div className="relative w-48 h-64 md:w-40 md:h-56 rounded-lg border-2 border-zinc-700 overflow-hidden flex-shrink-0 shadow-2xl">
+                    <Image
+                      src="https://files.jotform.com/jufs/TRUEServiceSupport/form_files/DD-2.682168432a3f96.74677364.png?md5=TWfuQePJMp7A_osAPJ97VQ&expires=1760753269"
+                      alt="Cart Screenshot Example"
+                      fill
+                      className="object-contain bg-white"
+                      unoptimized
+                    />
+                  </div>
                 </div>
               </div>
 
               {/* Step 2 */}
-              <div className="flex items-center gap-3 p-4 bg-zinc-900/50 rounded-lg border border-zinc-800/50">
-                <div className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm flex-shrink-0">2</div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-sm text-white mb-1">Upload Checkout Total</h3>
-                  <p className="text-xs text-zinc-400">Include all fees and taxes</p>
-                </div>
-                <div className="relative w-16 h-24 rounded border border-zinc-700 overflow-hidden flex-shrink-0">
-                  <Image
-                    src="https://files.jotform.com/jufs/TRUEServiceSupport/form_files/DDS-2.68216812cd78e2.99249574.png?md5=SPJFI0HPsANa_kdQAEYg-w&expires=1760753270"
-                    alt="Checkout"
-                    fill
-                    className="object-cover"
-                    unoptimized
-                  />
+              <div className="bg-zinc-900/80 rounded-xl p-6 border border-zinc-800/80">
+                <div className="flex flex-col md:flex-row items-start gap-6">
+                  <div className="flex-shrink-0">
+                    <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-black text-xl">2</div>
+                  </div>
+                  <div className="flex-1 space-y-3">
+                    <h3 className="text-xl font-black text-white">Upload Checkout Total Screenshot</h3>
+                    <p className="text-base text-zinc-300 leading-relaxed">
+                      Capture your complete checkout screen with the final total amount, including all fees, taxes, tips, and delivery charges. This is what we base your discount on.
+                    </p>
+                    <ul className="text-sm text-zinc-400 space-y-1 pl-4">
+                      <li>• Must show the final total amount</li>
+                      <li>• Include all fees, taxes, and delivery charges</li>
+                      <li>• Ensure the total is clearly visible</li>
+                    </ul>
+                  </div>
+                  <div className="relative w-48 h-64 md:w-40 md:h-56 rounded-lg border-2 border-zinc-700 overflow-hidden flex-shrink-0 shadow-2xl">
+                    <Image
+                      src="https://files.jotform.com/jufs/TRUEServiceSupport/form_files/DDS-2.68216812cd78e2.99249574.png?md5=SPJFI0HPsANa_kdQAEYg-w&expires=1760753270"
+                      alt="Checkout Total Screenshot Example"
+                      fill
+                      className="object-contain bg-white"
+                      unoptimized
+                    />
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Compact Warning */}
-            <div className="flex items-start gap-2 p-3 bg-red-950/30 border border-red-900/50 rounded-lg">
-              <AlertCircle className="h-4 w-4 text-red-400 flex-shrink-0 mt-0.5" />
-              <p className="text-xs text-red-200">
-                <strong>Warning:</strong> Falsified screenshots result in permanent ban. Be accurate.
-              </p>
+            {/* Important Notice */}
+            <div className="mt-6 flex items-start gap-3 p-4 bg-red-950/40 border-2 border-red-900/50 rounded-lg">
+              <AlertCircle className="h-6 w-6 text-red-400 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm font-bold text-red-200 mb-1">⚠️ Important Warning</p>
+                <p className="text-sm text-red-300 leading-relaxed">
+                  Falsified or edited screenshots will result in immediate and permanent account ban. All submissions are verified. Please be accurate and honest.
+                </p>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Services Grid - Premium Dark Cards */}
-      <section className="bg-black py-12">
+      <section id="services" className="bg-black py-12">
         <div className="container mx-auto px-4">
           <div className="text-center mb-10">
             <h2 className="text-3xl font-black text-white mb-2">Available Services</h2>
@@ -388,7 +436,7 @@ export default function FoodServicesPage() {
                     <CardDescription className="text-xs text-zinc-400">{service.description}</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-3 pb-3">
-                    <div className="relative h-36 w-full rounded-lg overflow-hidden bg-zinc-950 flex items-center justify-center border border-zinc-800 group-hover:border-primary/30 transition-colors">
+                    <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-zinc-950 flex items-center justify-center border border-zinc-800 group-hover:border-primary/30 transition-colors">
                       {service.imageUrl ? (
                         <Image
                           src={service.imageUrl}

@@ -8,80 +8,75 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, CheckCircle, Loader2 } from "lucide-react";
+import { AlertCircle, Loader2 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
-
-type ErrorTypes = Partial<Record<keyof typeof authClient.$ERROR_CODES, string>>;
-const errorCodes = {
-  USER_ALREADY_EXISTS: "An account with this email already exists",
-} satisfies ErrorTypes;
-
-const getErrorMessage = (code: string) => {
-  if (code in errorCodes) {
-    return errorCodes[code as keyof typeof errorCodes];
-  }
-  return "Registration failed. Please try again.";
-};
+import { toast } from "sonner";
 
 export default function SignUpPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
+    username: "",
     password: "",
     confirmPassword: "",
   });
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
-
-  const validateForm = () => {
-    if (!formData.name.trim()) {
-      setError("Name is required");
-      return false;
-    }
-    if (!formData.email.trim()) {
-      setError("Email is required");
-      return false;
-    }
-    if (formData.password.length < 6) {
-      setError("Password must be at least 6 characters long");
-      return false;
-    }
-    if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match");
-      return false;
-    }
-    return true;
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    if (!validateForm()) {
+    // Validation
+    if (formData.username.length < 3) {
+      setError("Username must be at least 3 characters long");
+      return;
+    }
+
+    if (formData.password.length < 8) {
+      setError("Password must be at least 8 characters long");
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match");
       return;
     }
 
     setLoading(true);
 
     try {
-      const { error } = await authClient.signUp.email({
-        email: formData.email,
-        name: formData.name,
+      // Generate internal email for Better Auth compatibility
+      const internalEmail = `${formData.username.toLowerCase()}@user.trueservices.local`;
+      
+      const { data, error } = await authClient.signUp.email({
+        email: internalEmail,
         password: formData.password,
+        name: formData.username,
       });
 
       if (error?.code) {
-        setError(getErrorMessage(error.code));
+        if (error.code === "USER_ALREADY_EXISTS") {
+          setError("Username already taken. Please choose another one.");
+        } else {
+          setError("Registration failed. Please try again.");
+        }
         setLoading(false);
         return;
       }
 
-      setSuccess(true);
-      setTimeout(() => {
-        router.push("/sign-in?registered=true");
-      }, 2000);
+      toast.success("Account created successfully!");
+      
+      // Auto sign-in after registration
+      const { error: signInError } = await authClient.signIn.email({
+        email: internalEmail,
+        password: formData.password,
+      });
+
+      if (signInError) {
+        router.push("/sign-in");
+      } else {
+        router.push("/account");
+      }
     } catch (err) {
       setError("An unexpected error occurred. Please try again.");
       setLoading(false);
@@ -99,7 +94,7 @@ export default function SignUpPage() {
           </div>
           <CardTitle className="text-2xl text-center">Create Account</CardTitle>
           <CardDescription className="text-center">
-            Sign up to start using TrueServices
+            Choose a username to get started - no email required
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
@@ -111,39 +106,21 @@ export default function SignUpPage() {
               </Alert>
             )}
 
-            {success && (
-              <Alert className="bg-green-500/10 border-green-500/20">
-                <CheckCircle className="h-4 w-4 text-green-500" />
-                <AlertDescription className="text-green-600">
-                  Account created successfully! Redirecting to sign in...
-                </AlertDescription>
-              </Alert>
-            )}
-
             <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
+              <Label htmlFor="username">Username</Label>
               <Input
-                id="name"
+                id="username"
                 type="text"
-                placeholder="John Doe"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder="Choose a unique username"
+                value={formData.username}
+                onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                 required
-                disabled={loading || success}
+                disabled={loading}
+                autoComplete="off"
               />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="you@example.com"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                required
-                disabled={loading || success}
-              />
+              <p className="text-xs text-muted-foreground">
+                Your username is private and secure. We prioritize your privacy.
+              </p>
             </div>
 
             <div className="space-y-2">
@@ -151,15 +128,13 @@ export default function SignUpPage() {
               <Input
                 id="password"
                 type="password"
-                placeholder="••••••••"
+                placeholder="Create a strong password (min 8 characters)"
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 required
-                disabled={loading || success}
+                disabled={loading}
+                autoComplete="off"
               />
-              <p className="text-xs text-muted-foreground">
-                Must be at least 6 characters long
-              </p>
             </div>
 
             <div className="space-y-2">
@@ -167,28 +142,24 @@ export default function SignUpPage() {
               <Input
                 id="confirmPassword"
                 type="password"
-                placeholder="••••••••"
+                placeholder="Re-enter your password"
                 value={formData.confirmPassword}
                 onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                 required
-                disabled={loading || success}
+                disabled={loading}
+                autoComplete="off"
               />
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
-            <Button type="submit" className="w-full" disabled={loading || success}>
+            <Button type="submit" className="w-full" disabled={loading}>
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Creating account...
                 </>
-              ) : success ? (
-                <>
-                  <CheckCircle className="mr-2 h-4 w-4" />
-                  Account created!
-                </>
               ) : (
-                "Sign Up"
+                "Create Account"
               )}
             </Button>
 
