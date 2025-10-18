@@ -66,9 +66,13 @@ export default function DepositPage() {
       }
     };
 
-    if (session?.user) {
-      fetchAddresses();
+    // FIX: Set loading to false if no session, otherwise fetch
+    if (!session?.user) {
+      setIsLoading(false);
+      return;
     }
+    
+    fetchAddresses();
   }, [session]);
 
   const handleCryptoSelect = async (crypto: string) => {
