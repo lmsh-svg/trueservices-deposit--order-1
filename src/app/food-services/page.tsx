@@ -345,7 +345,6 @@ export default function FoodServices() {
 
               {/* Cart Screenshot Image */}
               <div>
-                <p className="text-sm text-zinc-400 mb-3 italic">Example:</p>
                 <div className="relative w-full h-[560px] rounded-lg overflow-hidden shadow-2xl">
                   <Image
                     src="https://files.jotform.com/jufs/TRUEServiceSupport/form_files/DD-2.682168432a3f96.74677364.png?md5=TWfuQePJMp7A_osAPJ97VQ&expires=1760753269"
@@ -374,7 +373,6 @@ export default function FoodServices() {
 
               {/* Checkout Screenshot Image */}
               <div>
-                <p className="text-sm text-zinc-400 mb-3 italic">Example:</p>
                 <div className="relative w-full h-[560px] rounded-lg overflow-hidden shadow-2xl">
                   <Image
                     src="https://files.jotform.com/jufs/TRUEServiceSupport/form_files/DDS-2.68216812cd78e2.99249574.png?md5=SPJFI0HPsANa_kdQAEYg-w&expires=1760753270"
@@ -462,17 +460,23 @@ export default function FoodServices() {
                   key={service.id} 
                   className={`group bg-gradient-to-b from-zinc-900 to-zinc-950 border-zinc-800 hover:border-primary/50 transition-all duration-300 ${!service.isAvailable ? "opacity-50" : "hover:shadow-2xl hover:shadow-primary/10"}`}
                 >
-                  <CardHeader className="pb-3">
+                  <CardHeader className="pb-2">
                     <div className="flex items-start justify-between mb-2">
                       <CardTitle className="text-lg font-black text-white">{service.name}</CardTitle>
-                      <Badge variant={service.isAvailable ? "default" : "secondary"} className="text-xs font-bold">
-                        {service.isAvailable ? "Active" : "Unavailable"}
-                      </Badge>
+                      {service.isAvailable ? (
+                        <Badge className="text-xs font-bold bg-green-600 hover:bg-green-700 text-white border-0">
+                          Active
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary" className="text-xs font-bold">
+                          Unavailable
+                        </Badge>
+                      )}
                     </div>
                     <CardDescription className="text-xs text-zinc-400">{service.description}</CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-3 pb-3">
-                    <div className="relative w-full aspect-[5/4] rounded-lg overflow-hidden bg-zinc-950 flex items-center justify-center border border-zinc-800 group-hover:border-primary/30 transition-colors">
+                  <CardContent className="space-y-2 pb-2">
+                    <div className="relative w-full aspect-[5/3] rounded-lg overflow-hidden bg-zinc-950 flex items-center justify-center border border-zinc-800 group-hover:border-primary/30 transition-colors">
                       {service.imageUrl ? (
                         <Image
                           src={service.imageUrl}
@@ -490,12 +494,12 @@ export default function FoodServices() {
                     </div>
                     {service.priceLimit && (
                       <div className="flex items-center justify-between px-3 py-1.5 bg-zinc-900 rounded-md border border-zinc-800 text-xs">
-                        <span className="text-zinc-500 font-medium">Max:</span>
+                        <span className="text-zinc-500 font-medium">Order Limit:</span>
                         <span className="font-black text-primary">${service.priceLimit}</span>
                       </div>
                     )}
                   </CardContent>
-                  <CardFooter className="flex flex-col gap-2 pt-0">
+                  <CardFooter className="flex flex-col gap-2 pt-0 pb-3">
                     <Button
                       className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-black h-10 shadow-lg shadow-primary/20"
                       disabled={!service.isAvailable}

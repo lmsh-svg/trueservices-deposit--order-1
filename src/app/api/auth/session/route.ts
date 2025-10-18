@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
-import { user, session } from '@/db/schema';
+import { user, session, users } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 
 // Helper function to extract session token from request
@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Query user data
+    // Query user data from Better Auth user table
     const userResult = await db
       .select()
       .from(user)
@@ -89,7 +89,16 @@ export async function GET(request: NextRequest) {
 
     const userData = userResult[0];
 
-    // Return success response
+    // Query legacy users table to get role
+    const legacyUserResult = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, userData.email))
+      .limit(1);
+
+    const userRole = legacyUserResult.length > 0 ? legacyUserResult[0].role : 'user';
+
+    // Return success response with role
     return NextResponse.json(
       {
         success: true,
@@ -98,6 +107,7 @@ export async function GET(request: NextRequest) {
           name: userData.name,
           email: userData.email,
           emailVerified: userData.emailVerified,
+          role: userRole,
         },
         session: {
           id: sessionData.id,
