@@ -37,8 +37,8 @@ export default function Home() {
           </p>
           <div className="pt-6">
             <Button asChild size="lg" className="text-base md:text-lg px-6 md:px-8 py-5 md:py-6 bg-primary text-primary-foreground hover:bg-primary/90">
-              <Link href="/services">
-                See TRUE in Action <ArrowRight className="ml-2 h-5 w-5" />
+              <Link href="/food-services">
+                Explore Food Services <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
           </div>
