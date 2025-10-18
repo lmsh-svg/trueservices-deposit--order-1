@@ -13,7 +13,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useSession } from "@/lib/auth-client";
 import { toast } from "sonner";
-import { Upload, ExternalLink, Check, X, ArrowLeft } from "lucide-react";
+import { Upload, Check, X, Info } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface Service {
   id: number;
@@ -44,9 +45,15 @@ export default function Food4LessPage() {
     cartImagePreview: "",
     checkoutImageFile: null as File | null,
     checkoutImagePreview: "",
+    streetAddress: "",
+    streetAddress2: "",
+    city: "",
+    state: "",
+    postalCode: "",
+    restaurantName: "",
+    driverTip: "0.00",
     orderAmount: "",
-    deliveryAddress: "",
-    specialInstructions: "",
+    orderNotes: "",
   });
   const [submitting, setSubmitting] = useState(false);
 
@@ -146,6 +153,16 @@ export default function Food4LessPage() {
       return;
     }
 
+    if (!orderForm.streetAddress.trim() || !orderForm.city.trim() || !orderForm.state.trim() || !orderForm.postalCode.trim()) {
+      toast.error("Please fill in all address fields");
+      return;
+    }
+
+    if (!orderForm.restaurantName.trim()) {
+      toast.error("Please enter the restaurant name");
+      return;
+    }
+
     const amount = parseFloat(orderForm.orderAmount);
     if (isNaN(amount) || amount <= 0) {
       toast.error("Please enter a valid order amount");
@@ -157,16 +174,14 @@ export default function Food4LessPage() {
       return;
     }
 
-    if (!orderForm.deliveryAddress.trim()) {
-      toast.error("Please enter your delivery address");
-      return;
-    }
-
     try {
       setSubmitting(true);
       const token = localStorage.getItem("bearer_token");
       
       const discountedAmount = amount * (1 - selectedService.discountPercentage / 100);
+      const driverTipAmount = parseFloat(orderForm.driverTip) || 0;
+      
+      const fullAddress = `${orderForm.streetAddress}${orderForm.streetAddress2 ? ', ' + orderForm.streetAddress2 : ''}, ${orderForm.city}, ${orderForm.state} ${orderForm.postalCode}`;
       
       const cartImageUrl = orderForm.cartImagePreview;
       const checkoutImageUrl = orderForm.checkoutImagePreview;
@@ -181,10 +196,10 @@ export default function Food4LessPage() {
           userId: session.user.id,
           orderType: "service",
           serviceId: selectedService.id,
-          totalAmount: discountedAmount,
+          totalAmount: discountedAmount + driverTipAmount,
           paymentStatus: "pending",
           deliveryStatus: "pending",
-          specialInstructions: `Cart Screenshot: ${cartImageUrl}\nCheckout Screenshot: ${checkoutImageUrl}\nOriginal Amount: $${amount}\nDelivery Address: ${orderForm.deliveryAddress}\nSpecial Instructions: ${orderForm.specialInstructions}`,
+          specialInstructions: `Restaurant: ${orderForm.restaurantName}\nCart Screenshot: ${cartImageUrl}\nCheckout Screenshot: ${checkoutImageUrl}\nOriginal Amount: $${amount}\nDriver Tip: $${driverTipAmount}\nDelivery Address: ${fullAddress}\nOrder Notes: ${orderForm.orderNotes}`,
         }),
       });
 
@@ -199,9 +214,15 @@ export default function Food4LessPage() {
         cartImagePreview: "",
         checkoutImageFile: null,
         checkoutImagePreview: "",
+        streetAddress: "",
+        streetAddress2: "",
+        city: "",
+        state: "",
+        postalCode: "",
+        restaurantName: "",
+        driverTip: "0.00",
         orderAmount: "",
-        deliveryAddress: "",
-        specialInstructions: "",
+        orderNotes: "",
       });
       setOrderDialogOpen(false);
       
@@ -222,71 +243,100 @@ export default function Food4LessPage() {
     if (service.browseLink) {
       window.open(service.browseLink, '_blank', 'noopener,noreferrer');
     } else {
-      toast.error("Browse link not available for this service");
+      // Default browse links based on service name
+      const serviceName = service.name.toLowerCase();
+      if (serviceName.includes('ubereats') || serviceName.includes('uber eats')) {
+        window.open('https://www.ubereats.com', '_blank', 'noopener,noreferrer');
+      } else if (serviceName.includes('doordash')) {
+        window.open('https://www.doordash.com', '_blank', 'noopener,noreferrer');
+      } else if (serviceName.includes('grubhub')) {
+        window.open('https://www.grubhub.com', '_blank', 'noopener,noreferrer');
+      } else {
+        toast.error("Browse link not available for this service");
+      }
     }
   };
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Standalone FOOD4LESS Header - No TrueServices Navigation */}
-      <header className="w-full bg-gradient-to-r from-primary via-[#ffae42] to-primary py-5 px-4 text-center">
-        <h1 className="text-2xl md:text-3xl font-bold text-primary-foreground">FOOD4LESS</h1>
-        <p className="text-sm md:text-base text-primary-foreground/90 mt-1">
-          Get your favorite food for less with TRUE Services
-        </p>
-        <div className="mt-3">
-          <Link 
-            href="/" 
-            className="inline-flex items-center text-sm font-medium text-primary-foreground hover:underline group relative"
-          >
-            <ArrowLeft className="h-4 w-4 mr-1" />
-            Back to True Services
-            <span className="absolute top-full left-1/2 transform -translate-x-1/2 mt-1 px-2 py-1 bg-zinc-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-              Return to main TrueServices site
-            </span>
-          </Link>
+      {/* Standalone FOOD4LESS Header */}
+      <header className="w-full bg-gradient-to-r from-[#d4af37] via-[#f4d03f] to-[#d4af37] py-6 px-4 text-center shadow-lg">
+        <h1 className="text-3xl md:text-5xl font-black text-zinc-900 tracking-tight">FOOD4LESS</h1>
+        <div className="mt-2 flex items-center justify-center gap-2">
+          <div className="w-2 h-2 bg-green-600 rounded-full animate-pulse"></div>
+          <span className="text-sm md:text-base font-semibold text-zinc-800">Service is currently OPEN</span>
         </div>
       </header>
 
-      {/* Global Discount Banner */}
-      <div className="w-full max-w-lg mx-auto mt-3 px-4">
-        <div className="bg-primary text-primary-foreground text-center py-2 px-4 rounded-lg font-semibold text-sm md:text-base animate-pulse">
-          🎉 SAVE UP TO 50% ON ALL ORDERS! 🎉
-        </div>
-      </div>
+      {/* Hero Section */}
+      <section className="container max-w-4xl mx-auto px-4 py-8 text-center">
+        <p className="text-xl md:text-2xl font-semibold text-foreground mb-2">
+          Get your favorite food for less with TRUE Services.
+        </p>
+        <p className="text-lg md:text-xl text-primary font-bold mb-2">
+          Easy. Reliable. 100% TRUE.
+        </p>
+        <p className="text-base md:text-lg text-muted-foreground">
+          Save up to 50% on your next meal.
+        </p>
+      </section>
 
-      {/* Service Status Banner */}
-      <div className="w-full max-w-lg mx-auto mt-3 px-4">
-        <div className="flex items-center justify-center gap-2 py-2 px-4 bg-muted/50 rounded-full">
-          <span className="text-sm font-medium">Service Status:</span>
-          <Badge className="bg-green-500 text-white">OPEN</Badge>
-        </div>
-      </div>
+      {/* How It Works - 2 Steps */}
+      <section className="container max-w-3xl mx-auto px-4 py-8">
+        <h2 className="text-2xl md:text-3xl font-bold text-center mb-8">How It Works</h2>
+        <div className="grid md:grid-cols-2 gap-8">
+          {/* Step 1 */}
+          <div className="bg-card border-2 border-primary/20 rounded-xl p-6 hover:shadow-lg transition-all">
+            <div className="w-16 h-16 mx-auto bg-primary rounded-full flex items-center justify-center mb-4">
+              <span className="text-3xl font-black text-primary-foreground">1</span>
+            </div>
+            <h3 className="font-bold text-xl mb-3 text-center">Browse & Add to Cart</h3>
+            <p className="text-muted-foreground text-center text-sm">
+              Browse your favorite delivery app (DoorDash, Uber Eats, etc.) and add items to your cart
+            </p>
+          </div>
 
-      {/* Available Services Section - Combined Info in Single Boxes */}
-      <section className="w-full max-w-lg mx-auto px-4 py-6">
+          {/* Step 2 */}
+          <div className="bg-card border-2 border-primary/20 rounded-xl p-6 hover:shadow-lg transition-all">
+            <div className="w-16 h-16 mx-auto bg-primary rounded-full flex items-center justify-center mb-4">
+              <span className="text-3xl font-black text-primary-foreground">2</span>
+            </div>
+            <h3 className="font-bold text-xl mb-3 text-center">Screenshot & Save!</h3>
+            <p className="text-muted-foreground text-center text-sm">
+              Take screenshots of your cart and checkout, submit your order, and we'll apply massive discounts!
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Available Services */}
+      <section className="container max-w-5xl mx-auto px-4 py-8">
+        <h2 className="text-2xl md:text-3xl font-bold text-center mb-8">Available Services</h2>
+        
         {loading ? (
-          <div className="space-y-3">
-            {[1, 2, 3].map((i) => (
-              <Skeleton key={i} className="h-48 w-full rounded-lg" />
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <Skeleton key={i} className="h-80 w-full rounded-xl" />
             ))}
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {services.map((service) => (
               <div
                 key={service.id}
-                className={`bg-card rounded-lg p-3 shadow-md transition-all ${
-                  service.isAvailable ? 'hover:shadow-lg' : 'opacity-60 bg-muted'
+                className={`bg-card rounded-xl border-2 overflow-hidden transition-all ${
+                  service.isAvailable 
+                    ? 'border-border hover:border-primary hover:shadow-xl shadow-primary/10' 
+                    : 'border-border/30 opacity-50'
                 }`}
               >
-                {/* Service Header */}
-                <div className="flex justify-between items-center mb-2 relative">
-                  <h3 className="text-sm md:text-base font-bold text-primary">{service.name}</h3>
+                {/* Header with Status */}
+                <div className="bg-gradient-to-r from-primary/10 to-primary/5 p-4 flex items-center justify-between">
+                  <h3 className="font-bold text-base flex-1">{service.name}</h3>
                   <Badge 
                     className={service.isAvailable 
-                      ? "bg-green-500 text-white" 
-                      : "bg-red-500 text-white"
+                      ? "bg-green-600 hover:bg-green-600 text-white" 
+                      : "bg-red-600 hover:bg-red-600 text-white"
                     }
                   >
                     {service.isAvailable ? (
@@ -295,57 +345,33 @@ export default function Food4LessPage() {
                       <><X className="h-3 w-3 mr-1" />Unavailable</>
                     )}
                   </Badge>
-                  {!service.isAvailable && (
-                    <div className="hidden group-hover:block absolute top-full right-0 mt-1 px-2 py-1 bg-zinc-800 text-white text-xs rounded max-w-[200px] text-center z-10">
-                      This service is temporarily unavailable. Check back soon!
-                    </div>
-                  )}
                 </div>
 
-                {/* Service Image with Discount Badge */}
-                <div className="flex justify-center mb-2">
-                  <div className="relative inline-block">
-                    {service.imageUrl ? (
-                      <Image
-                        src={service.imageUrl}
-                        alt={service.name}
-                        width={130}
-                        height={130}
-                        className="rounded-md object-cover transition-transform hover:scale-105"
-                        unoptimized
-                      />
-                    ) : (
-                      <div className="w-32 h-32 bg-muted rounded-md flex items-center justify-center">
-                        <span className="text-muted-foreground text-xs">No Image</span>
-                      </div>
-                    )}
-                    <div className="absolute top-1 right-1 bg-primary text-primary-foreground px-2 py-1 rounded text-xs font-bold shadow-md">
-                      {service.discountPercentage}% OFF
-                    </div>
-                  </div>
+                {/* Discount Badge */}
+                <div className="bg-primary text-primary-foreground text-center py-3">
+                  <p className="text-2xl font-black">{service.discountPercentage}% OFF</p>
                 </div>
 
-                {/* Price Limit */}
-                {service.priceLimit && (
-                  <p className="text-xs text-muted-foreground text-center mb-2">
-                    Price Limit: ${service.priceLimit} max
+                {/* Service Limit */}
+                <div className="px-4 py-3 text-center bg-muted/30">
+                  <p className="text-sm text-muted-foreground">
+                    {service.priceLimit ? `$${service.priceLimit} Subtotal Max` : 'No Limit'} • Delivery Only
                   </p>
-                )}
+                </div>
 
                 {/* Buttons */}
-                <div className="flex gap-2">
+                <div className="p-4 space-y-2">
                   <Button
-                    className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 text-xs md:text-sm"
+                    className="w-full bg-primary hover:bg-primary/90 font-bold h-11"
                     onClick={() => handleOrderClick(service)}
                     disabled={!service.isAvailable}
                   >
-                    Order
+                    Place Order
                   </Button>
                   <Button
                     variant="outline"
-                    className="flex-1 border-primary text-primary hover:bg-primary hover:text-primary-foreground text-xs md:text-sm"
+                    className="w-full border-primary text-primary hover:bg-primary hover:text-primary-foreground h-11"
                     onClick={() => handleBrowseClick(service)}
-                    disabled={!service.isAvailable}
                   >
                     Browse
                   </Button>
@@ -356,71 +382,15 @@ export default function Food4LessPage() {
         )}
       </section>
 
-      {/* How It Works Section with Images */}
-      <section className="w-full max-w-lg mx-auto px-4 py-6">
-        <h2 className="text-xl md:text-2xl font-bold text-center mb-4">How It Works</h2>
-        <div className="space-y-4">
-          <div className="text-center">
-            <div className="w-full h-40 bg-muted rounded-lg mb-2 flex items-center justify-center overflow-hidden">
-              <Image
-                src="https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/object/public/project-uploads/3299d121-6898-45fe-872a-243b96ec8846/generated_images/clean%2c-modern-illustration-showing-a-s-b220bc0e-20251018190902.jpg"
-                alt="Step 1: Add items to cart"
-                width={400}
-                height={200}
-                className="object-cover"
-                unoptimized
-              />
-            </div>
-            <p className="text-sm font-medium">1. Add items to your cart on the food delivery app</p>
-          </div>
-          
-          <div className="text-center">
-            <div className="w-full h-40 bg-muted rounded-lg mb-2 flex items-center justify-center overflow-hidden">
-              <Image
-                src="https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/object/public/project-uploads/3299d121-6898-45fe-872a-243b96ec8846/generated_images/modern-digital-illustration-showing-a-ha-f1e8a11c-20251018190909.jpg"
-                alt="Step 2: Take screenshot"
-                width={400}
-                height={200}
-                className="object-cover"
-                unoptimized
-              />
-            </div>
-            <p className="text-sm font-medium">2. Take a screenshot of your cart and submit your order</p>
-          </div>
-          
-          <div className="text-center">
-            <div className="w-full h-40 bg-muted rounded-lg mb-2 flex items-center justify-center overflow-hidden">
-              <Image
-                src="https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/object/public/project-uploads/3299d121-6898-45fe-872a-243b96ec8846/generated_images/celebratory-illustration-showing-stacks--a02d2a26-20251018190917.jpg"
-                alt="Step 3: Save money"
-                width={400}
-                height={200}
-                className="object-cover"
-                unoptimized
-              />
-            </div>
-            <p className="text-sm font-medium">3. We process it with exclusive discounts—you save big!</p>
-          </div>
-        </div>
-      </section>
-
-      {/* Status Section */}
-      <section className="w-full max-w-lg mx-auto px-4 py-6">
-        <div className="bg-muted/50 rounded-lg p-4 text-center">
-          <h2 className="text-lg font-semibold mb-3">Service Availability Status</h2>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={fetchServices}
-            className="mb-3"
-          >
-            Refresh Status
-          </Button>
-          <div className="space-y-1 text-sm">
+      {/* Service Status */}
+      <section className="container max-w-3xl mx-auto px-4 py-8">
+        <div className="bg-card rounded-xl border border-border p-6">
+          <h2 className="text-xl font-bold text-center mb-6">Status</h2>
+          <div className="space-y-2">
             {services.map((service) => (
-              <div key={service.id} className="flex justify-between items-center">
-                <span>{service.name}:</span>
-                <Badge className={service.isAvailable ? "bg-green-500" : "bg-red-500"}>
+              <div key={service.id} className="flex items-center justify-between py-2 px-3 bg-muted/30 rounded-lg">
+                <span className="text-sm font-medium">{service.name}:</span>
+                <Badge className={service.isAvailable ? "bg-green-600" : "bg-red-600"}>
                   {service.isAvailable ? "Available" : "Unavailable"}
                 </Badge>
               </div>
@@ -429,172 +399,316 @@ export default function Food4LessPage() {
         </div>
       </section>
 
-      {/* Order Dialog */}
+      {/* Terms */}
+      <section className="container max-w-4xl mx-auto px-4 py-6">
+        <div className="bg-yellow-500/10 border-l-4 border-yellow-500 rounded p-4">
+          <p className="text-sm">
+            <span className="font-bold">🔔 Terms:</span> Not liable for restaurant/driver errors. No refunds unless order is incorrect due to our mistake. Full policy applies.
+          </p>
+        </div>
+      </section>
+
+      {/* Order Dialog - Updated with separate fields */}
       <Dialog open={orderDialogOpen} onOpenChange={setOrderDialogOpen}>
         <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-2xl">Place Your Order - {selectedService?.name}</DialogTitle>
-            <DialogDescription className="text-base">
-              Upload both screenshots and complete your order details below
+            <DialogTitle className="text-xl md:text-2xl font-bold">
+              {selectedService?.name} Order Form
+            </DialogTitle>
+            <DialogDescription>
+              {selectedService?.name} - {selectedService?.discountPercentage}% OFF • ${selectedService?.priceLimit} Subtotal Max • Delivery Only
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-6 py-4">
-            {/* Cart Screenshot Upload */}
-            <div className="space-y-3">
-              <Label htmlFor="cartImage" className="text-base font-bold flex items-center gap-2">
-                📸 Cart Screenshot <span className="text-red-500">*</span>
-              </Label>
-              <div className="border-2 border-dashed border-border rounded-lg p-4 text-center hover:border-primary/50 transition-colors">
-                <input
-                  id="cartImage"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleCartImageUpload}
-                  className="hidden"
+          <div className="space-y-5 py-4">
+            {/* Need Help Link */}
+            <Alert className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900">
+              <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              <AlertDescription className="text-sm">
+                <span className="font-semibold">Need Help?</span>{" "}
+                <a href="#" className="text-blue-600 dark:text-blue-400 underline hover:no-underline">
+                  Click Here
+                </a>
+              </AlertDescription>
+            </Alert>
+
+            {/* Browse Button */}
+            <div className="text-center">
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => handleBrowseClick(selectedService!)}
+                className="w-full font-bold"
+              >
+                🔍 Browse {selectedService?.name.split(' - ')[0]} First
+              </Button>
+            </div>
+
+            {/* Address Section */}
+            <div className="space-y-3 border-t pt-4">
+              <Label className="text-base font-bold">Address *</Label>
+              
+              <div>
+                <Input
+                  placeholder="Street Address"
+                  value={orderForm.streetAddress}
+                  onChange={(e) => setOrderForm({ ...orderForm, streetAddress: e.target.value })}
+                  className="mb-2"
                 />
-                <label htmlFor="cartImage" className="cursor-pointer block">
-                  {orderForm.cartImagePreview ? (
-                    <div className="space-y-2">
-                      <div className="relative h-32 w-full rounded-md overflow-hidden">
-                        <Image
-                          src={orderForm.cartImagePreview}
-                          alt="Cart preview"
-                          fill
-                          className="object-contain"
-                          unoptimized
-                        />
-                      </div>
-                      <p className="text-sm text-primary font-medium">✓ Cart screenshot uploaded - Click to change</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-2 py-4">
-                      <Upload className="h-10 w-10 mx-auto text-primary" />
-                      <p className="text-base font-medium">Click to upload cart screenshot</p>
-                      <p className="text-sm text-muted-foreground">PNG, JPG up to 5MB</p>
-                    </div>
-                  )}
-                </label>
+                <Input
+                  placeholder="Street Address Line 2"
+                  value={orderForm.streetAddress2}
+                  onChange={(e) => setOrderForm({ ...orderForm, streetAddress2: e.target.value })}
+                  className="mb-2"
+                />
+                <Input
+                  placeholder="City"
+                  value={orderForm.city}
+                  onChange={(e) => setOrderForm({ ...orderForm, city: e.target.value })}
+                  className="mb-2"
+                />
+                <div className="grid grid-cols-2 gap-2">
+                  <Input
+                    placeholder="State / Province"
+                    value={orderForm.state}
+                    onChange={(e) => setOrderForm({ ...orderForm, state: e.target.value })}
+                  />
+                  <Input
+                    placeholder="Postal / Zip Code"
+                    value={orderForm.postalCode}
+                    onChange={(e) => setOrderForm({ ...orderForm, postalCode: e.target.value })}
+                  />
+                </div>
               </div>
             </div>
 
-            {/* Checkout Screenshot Upload */}
-            <div className="space-y-3">
-              <Label htmlFor="checkoutImage" className="text-base font-bold flex items-center gap-2">
-                📸 Checkout Total Screenshot <span className="text-red-500">*</span>
-              </Label>
-              <div className="border-2 border-dashed border-border rounded-lg p-4 text-center hover:border-primary/50 transition-colors">
-                <input
-                  id="checkoutImage"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleCheckoutImageUpload}
-                  className="hidden"
-                />
-                <label htmlFor="checkoutImage" className="cursor-pointer block">
-                  {orderForm.checkoutImagePreview ? (
-                    <div className="space-y-2">
-                      <div className="relative h-32 w-full rounded-md overflow-hidden">
-                        <Image
-                          src={orderForm.checkoutImagePreview}
-                          alt="Checkout preview"
-                          fill
-                          className="object-contain"
-                          unoptimized
-                        />
-                      </div>
-                      <p className="text-sm text-primary font-medium">✓ Checkout screenshot uploaded - Click to change</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-2 py-4">
-                      <Upload className="h-10 w-10 mx-auto text-primary" />
-                      <p className="text-base font-medium">Click to upload checkout total screenshot</p>
-                      <p className="text-sm text-muted-foreground">PNG, JPG up to 5MB</p>
-                    </div>
-                  )}
-                </label>
-              </div>
-            </div>
-
-            {/* Order Amount */}
-            <div className="space-y-2">
-              <Label htmlFor="orderAmount" className="text-base font-bold">
-                Order Total Amount (USD) <span className="text-red-500">*</span>
-              </Label>
+            {/* Restaurant Name */}
+            <div>
+              <Label htmlFor="restaurant" className="text-base font-bold">Restaurant Name *</Label>
               <Input
-                id="orderAmount"
+                id="restaurant"
+                placeholder="Enter restaurant name"
+                value={orderForm.restaurantName}
+                onChange={(e) => setOrderForm({ ...orderForm, restaurantName: e.target.value })}
+                className="mt-2"
+              />
+            </div>
+
+            {/* Driver Tip */}
+            <div>
+              <Label htmlFor="tip" className="text-base font-bold">Driver Tip:</Label>
+              <Input
+                id="tip"
                 type="number"
                 step="0.01"
-                placeholder="Enter total from checkout screenshot"
-                value={orderForm.orderAmount}
-                onChange={(e) => setOrderForm({ ...orderForm, orderAmount: e.target.value })}
-                className="text-lg h-12"
+                placeholder="0.00"
+                value={orderForm.driverTip}
+                onChange={(e) => setOrderForm({ ...orderForm, driverTip: e.target.value })}
+                className="mt-2"
               />
-              {selectedService && orderForm.orderAmount && (
-                <div className="flex items-center justify-between text-sm p-3 bg-primary/10 rounded-lg border border-primary/30">
-                  <span className="font-medium">You save: ${(parseFloat(orderForm.orderAmount) * selectedService.discountPercentage / 100).toFixed(2)}</span>
-                  <span className="font-bold text-primary text-lg">
-                    You pay: ${(parseFloat(orderForm.orderAmount) * (1 - selectedService.discountPercentage / 100)).toFixed(2)}
-                  </span>
+              <p className="text-xs text-muted-foreground mt-1">
+                Optional: 100% of your tip goes directly to the driver, with no deductions.
+              </p>
+            </div>
+
+            {/* Screenshots Section */}
+            <div className="space-y-4 border-t pt-4">
+              <div>
+                <h3 className="font-bold text-base mb-2">Upload Your {selectedService?.name.split(' - ')[0]} Screenshots</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  To process your order, we need two screenshots from your {selectedService?.name.split(' - ')[0]} app: one showing your cart items and another showing the checkout total.
+                </p>
+              </div>
+
+              {/* Cart Screenshot */}
+              <div>
+                <Label className="text-base font-bold block mb-2">1. Cart Screenshot</Label>
+                <p className="text-sm text-muted-foreground mb-2">
+                  Open your {selectedService?.name.split(' - ')[0]} cart, ensure all items are visible, and take a screenshot.
+                </p>
+                <div className="border-2 border-dashed rounded-lg p-4 text-center hover:border-primary/50 transition-colors">
+                  <input
+                    id="cartImage"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleCartImageUpload}
+                    className="hidden"
+                  />
+                  <label htmlFor="cartImage" className="cursor-pointer block">
+                    {orderForm.cartImagePreview ? (
+                      <div className="space-y-2">
+                        <div className="relative h-32 w-full rounded-md overflow-hidden">
+                          <Image
+                            src={orderForm.cartImagePreview}
+                            alt="Cart preview"
+                            fill
+                            className="object-contain"
+                            unoptimized
+                          />
+                        </div>
+                        <p className="text-sm text-primary font-medium">✓ Uploaded - Click to change</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-2 py-6">
+                        <Upload className="h-10 w-10 mx-auto text-muted-foreground" />
+                        <p className="font-medium">Upload Screenshot</p>
+                        <p className="text-xs text-muted-foreground">Drag and drop files here</p>
+                        <p className="text-xs text-muted-foreground">No file chosen</p>
+                      </div>
+                    )}
+                  </label>
                 </div>
-              )}
+              </div>
+
+              {/* Checkout Screenshot */}
+              <div>
+                <Label className="text-base font-bold block mb-2">2. Checkout Total Screenshot</Label>
+                <p className="text-sm text-muted-foreground mb-2">
+                  Proceed to the {selectedService?.name.split(' - ')[0]} checkout page, ensure the total (including fees and taxes) is visible, and take a screenshot.
+                </p>
+                <div className="border-2 border-dashed rounded-lg p-4 text-center hover:border-primary/50 transition-colors">
+                  <input
+                    id="checkoutImage"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleCheckoutImageUpload}
+                    className="hidden"
+                  />
+                  <label htmlFor="checkoutImage" className="cursor-pointer block">
+                    {orderForm.checkoutImagePreview ? (
+                      <div className="space-y-2">
+                        <div className="relative h-32 w-full rounded-md overflow-hidden">
+                          <Image
+                            src={orderForm.checkoutImagePreview}
+                            alt="Checkout preview"
+                            fill
+                            className="object-contain"
+                            unoptimized
+                          />
+                        </div>
+                        <p className="text-sm text-primary font-medium">✓ Uploaded - Click to change</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-2 py-6">
+                        <Upload className="h-10 w-10 mx-auto text-muted-foreground" />
+                        <p className="font-medium">Upload Screenshot</p>
+                        <p className="text-xs text-muted-foreground">Drag and drop files here</p>
+                        <p className="text-xs text-muted-foreground">No file chosen</p>
+                      </div>
+                    )}
+                  </label>
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Please provide a screenshot of your {selectedService?.name.split(' - ')[0]} checkout page, ensuring the total (including taxes and fees) is clearly visible.
+                </p>
+              </div>
+
+              {/* Order Amount */}
+              <div>
+                <Label htmlFor="amount" className="text-base font-bold">Order Subtotal (from cart screenshot) *</Label>
+                <Input
+                  id="amount"
+                  type="number"
+                  step="0.01"
+                  placeholder="0.00"
+                  value={orderForm.orderAmount}
+                  onChange={(e) => setOrderForm({ ...orderForm, orderAmount: e.target.value })}
+                  className="mt-2 text-lg h-12"
+                />
+                {selectedService && orderForm.orderAmount && (
+                  <div className="mt-3 p-3 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-900 rounded-lg">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-muted-foreground">Original Subtotal:</span>
+                      <span className="line-through">${parseFloat(orderForm.orderAmount).toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm mt-1">
+                      <span className="font-semibold text-green-700 dark:text-green-400">Your Savings ({selectedService.discountPercentage}%):</span>
+                      <span className="font-bold text-green-700 dark:text-green-400">
+                        -${(parseFloat(orderForm.orderAmount) * selectedService.discountPercentage / 100).toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-base font-bold mt-2 pt-2 border-t border-green-300 dark:border-green-800">
+                      <span>You Pay:</span>
+                      <span className="text-primary text-xl">
+                        ${(parseFloat(orderForm.orderAmount) * (1 - selectedService.discountPercentage / 100) + parseFloat(orderForm.driverTip || "0")).toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Important Warning */}
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription className="text-xs">
+                  <strong>Important:</strong> Any attempt to falsify your total will be detected and may result in a permanent ban from our services. Please provide accurate screenshots to avoid delays.
+                </AlertDescription>
+              </Alert>
+
+              {/* Tip */}
+              <Alert className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900">
+                <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                <AlertDescription className="text-xs">
+                  <strong>🔔 Tip:</strong> For best results, take screenshots in a well-lit environment and ensure all text is legible. Use the {selectedService?.name.split(' - ')[0]} app, not the website.
+                </AlertDescription>
+              </Alert>
             </div>
 
-            {/* Delivery Address */}
-            <div className="space-y-2">
-              <Label htmlFor="deliveryAddress" className="text-base font-bold">
-                Delivery Address <span className="text-red-500">*</span>
-              </Label>
+            {/* Order Notes */}
+            <div>
+              <Label htmlFor="notes" className="text-base font-bold">Order Notes (optional)</Label>
               <Textarea
-                id="deliveryAddress"
-                placeholder="Enter your full delivery address including apartment/unit number"
-                value={orderForm.deliveryAddress}
-                onChange={(e) => setOrderForm({ ...orderForm, deliveryAddress: e.target.value })}
+                id="notes"
+                placeholder="Notes about your order, e.g. special notes for delivery."
+                value={orderForm.orderNotes}
+                onChange={(e) => setOrderForm({ ...orderForm, orderNotes: e.target.value })}
                 rows={3}
-                className="resize-none"
-              />
-            </div>
-
-            {/* Special Instructions */}
-            <div className="space-y-2">
-              <Label htmlFor="specialInstructions" className="text-base font-bold">
-                Special Instructions (Optional)
-              </Label>
-              <Textarea
-                id="specialInstructions"
-                placeholder="Dietary restrictions, delivery notes, utensils requests, etc."
-                value={orderForm.specialInstructions}
-                onChange={(e) => setOrderForm({ ...orderForm, specialInstructions: e.target.value })}
-                rows={2}
-                className="resize-none"
+                className="mt-2 resize-none"
               />
             </div>
           </div>
 
-          <DialogFooter className="gap-2 sm:gap-0">
+          <DialogFooter>
             <Button variant="outline" onClick={() => setOrderDialogOpen(false)}>
               Cancel
             </Button>
             <Button 
               onClick={handleOrderSubmit} 
               disabled={submitting}
-              className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold"
+              className="bg-primary hover:bg-primary/90 font-bold px-8"
+              size="lg"
             >
-              {submitting ? "Processing Order..." : "Place Order"}
+              {submitting ? "Processing..." : "PLACE ORDER"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Footer */}
-      <footer className="w-full text-center py-4 px-4 text-sm text-muted-foreground border-t border-border/40 mt-8">
-        <p className="text-xs mb-1">By using this service, you agree to our Terms of Service and Privacy Policy.</p>
-        <p>&copy; 2024 FOOD4LESS. All rights reserved.</p>
-        <p className="mt-1">
-          <Link href="/" className="text-primary hover:underline">
-            Return to TrueServices
+      {/* Footer with TrueServices Logo */}
+      <footer className="border-t border-border/40 bg-muted/20 mt-12">
+        <div className="container max-w-4xl mx-auto px-4 py-8 text-center">
+          <p className="text-xs text-muted-foreground mb-4">
+            © 2025 Affordable Eats. Powered by passion. Not affiliated with any third-party delivery services.
+          </p>
+          <p className="text-sm text-muted-foreground mb-6">
+            Need Help? Message Support on Telegram
+          </p>
+          
+          {/* Back to TrueServices with Logo */}
+          <Link href="/" className="inline-flex flex-col items-center gap-3 group">
+            <Image
+              src="https://files.jotform.com/jufs/TRUEServiceSupport/form_files/trueservicestransparent.67f010b8679bd1.07484258.png?md5=iFg1NnHrukcAtXkiT2Ci5Q&expires=1760754468"
+              alt="TrueServices Logo"
+              width={80}
+              height={80}
+              className="object-contain group-hover:scale-110 transition-transform"
+              unoptimized
+            />
+            <span className="text-sm font-medium text-primary group-hover:underline">
+              ← Return to TrueServices
+            </span>
           </Link>
-        </p>
+        </div>
       </footer>
     </div>
   );
