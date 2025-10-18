@@ -259,21 +259,17 @@ export default function AccountPage() {
           </Card>
         </div>
 
-        {/* User Info */}
+        {/* User Info - Simplified, No Email/Name Display */}
         <Card className="p-6 mb-8">
-          <h2 className="text-xl font-bold mb-4">Account Information</h2>
+          <h2 className="text-xl font-bold mb-4">Account Status</h2>
           <div className="space-y-3">
             <div>
-              <p className="text-sm text-muted-foreground">Name</p>
-              <p className="font-medium">{session.user.name}</p>
+              <p className="text-sm text-muted-foreground">Account Type</p>
+              <Badge variant="outline" className="mt-1">{session.user.role === "admin" ? "Administrator" : "Standard User"}</Badge>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Email</p>
-              <p className="font-medium">{session.user.email}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Role</p>
-              <Badge variant="outline">{session.user.role || "user"}</Badge>
+              <p className="text-sm text-muted-foreground">Member Since</p>
+              <p className="font-medium">{new Date().toLocaleDateString()}</p>
             </div>
           </div>
         </Card>

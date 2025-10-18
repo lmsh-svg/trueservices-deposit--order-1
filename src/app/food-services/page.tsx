@@ -270,7 +270,7 @@ export default function FoodServices() {
         
         <div className="container mx-auto px-4 py-16 text-center relative">
           <h1 className="text-6xl md:text-8xl font-black text-white mb-6 tracking-tighter">
-            Food For <span className="text-primary">Less</span>
+            FOOD<span className="text-primary">4</span>LESS
           </h1>
           
           <div className="relative inline-block group mb-4">
@@ -313,7 +313,7 @@ export default function FoodServices() {
         </div>
       </section>
 
-      {/* How It Works Section - Ultra Compact */}
+      {/* How It Works Section - With Step Icons */}
       <section id="how-it-works" className="bg-zinc-950 py-12 border-b border-zinc-800/50">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
@@ -321,22 +321,29 @@ export default function FoodServices() {
             
             <div className="space-y-6">
               {/* Upload Header */}
-              <div className="text-center">
+              <div className="text-center mb-6">
                 <h3 className="text-2xl font-black text-white mb-4">Upload Your DoorDash Screenshots</h3>
                 <p className="text-base text-zinc-300 leading-relaxed">
                   To process your order, we need two screenshots from your DoorDash app: one showing your cart items and another showing the checkout total. Follow the instructions below to upload clear screenshots.
                 </p>
               </div>
 
-              {/* Cart Screenshot Card */}
-              <Card className="bg-zinc-900/80 rounded-xl border border-zinc-800/80 p-6">
-                <h4 className="text-xl font-black text-white mb-3">Cart Screenshot</h4>
-                <p className="text-base text-zinc-300 leading-relaxed">
-                  Open your DoorDash cart, ensure all items are visible, and take a screenshot. Upload it in the designated field below.
-                </p>
+              {/* Step 1: Cart Screenshot */}
+              <Card className="bg-zinc-900/80 rounded-xl border-zinc-800/80 p-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-black text-lg">
+                    1
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="text-xl font-black text-white mb-3">Cart Screenshot</h4>
+                    <p className="text-base text-zinc-300 leading-relaxed">
+                      Open your DoorDash cart, ensure all items are visible, and take a screenshot. Upload it in the designated field below.
+                    </p>
+                  </div>
+                </div>
               </Card>
 
-              {/* Cart Screenshot Image - Outside Card */}
+              {/* Cart Screenshot Image */}
               <div>
                 <p className="text-sm text-zinc-400 mb-3 italic">Example:</p>
                 <div className="relative w-full h-[560px] rounded-lg overflow-hidden shadow-2xl">
@@ -350,15 +357,22 @@ export default function FoodServices() {
                 </div>
               </div>
 
-              {/* Checkout Screenshot Card */}
-              <Card className="bg-zinc-900/80 rounded-xl border border-zinc-800/80 p-6">
-                <h4 className="text-xl font-black text-white mb-3">Checkout Total Screenshot</h4>
-                <p className="text-base text-zinc-300 leading-relaxed">
-                  Proceed to the DoorDash checkout page, ensure the total (including fees and taxes) is visible, and take a screenshot. Upload it in the designated field below.
-                </p>
+              {/* Step 2: Checkout Screenshot */}
+              <Card className="bg-zinc-900/80 rounded-xl border-zinc-800/80 p-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-black text-lg">
+                    2
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="text-xl font-black text-white mb-3">Checkout Total Screenshot</h4>
+                    <p className="text-base text-zinc-300 leading-relaxed">
+                      Proceed to the DoorDash checkout page, ensure the total (including fees and taxes) is visible, and take a screenshot. Upload it in the designated field below.
+                    </p>
+                  </div>
+                </div>
               </Card>
 
-              {/* Checkout Screenshot Image - Outside Card */}
+              {/* Checkout Screenshot Image */}
               <div>
                 <p className="text-sm text-zinc-400 mb-3 italic">Example:</p>
                 <div className="relative w-full h-[560px] rounded-lg overflow-hidden shadow-2xl">
@@ -373,7 +387,7 @@ export default function FoodServices() {
               </div>
 
               {/* Tip Card */}
-              <Card className="bg-zinc-900/80 rounded-xl border border-zinc-800/80 p-5">
+              <Card className="bg-zinc-900/80 rounded-xl border-zinc-800/80 p-5">
                 <div className="flex items-start gap-3">
                   <div className="text-2xl">💡</div>
                   <div className="flex-1">

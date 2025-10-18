@@ -70,13 +70,8 @@ export default function SignInPage() {
 
       toast.success("Signed in successfully!");
       
-      // Small delay to ensure localStorage is written
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
-      // Redirect to account page
-      router.push("/account");
-      
-      // Don't set loading to false here - let the redirect happen
+      // Force a hard page reload to ensure session is properly loaded
+      window.location.href = "/account";
     } catch (err) {
       console.error("Sign in error:", err);
       setError("An unexpected error occurred. Please try again.");
