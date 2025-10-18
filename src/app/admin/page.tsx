@@ -145,6 +145,16 @@ export default function AdminDashboard() {
     isActive: true,
   });
 
+  // Service dialog state
+  const [serviceDialogOpen, setServiceDialogOpen] = useState(false);
+  const [editingService, setEditingService] = useState<Service | null>(null);
+  const [serviceForm, setServiceForm] = useState({
+    name: "",
+    discountPercentage: 0,
+    priceLimit: 0,
+    imageUrl: "",
+  });
+
   // Variant dialog state
   const [variantDialogOpen, setVariantDialogOpen] = useState(false);
   const [editingVariant, setEditingVariant] = useState<ProductVariant | null>(null);
@@ -369,6 +379,32 @@ export default function AdminDashboard() {
     }
   };
 
+  // Service handlers
+  const handleSaveService = async () => {
+    if (!editingService) return;
+    
+    try {
+      const response = await fetch(`/api/services?id=${editingService.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: serviceForm.name,
+          discountPercentage: serviceForm.discountPercentage,
+          priceLimit: serviceForm.priceLimit || null,
+          imageUrl: serviceForm.imageUrl || null,
+        }),
+      });
+      if (!response.ok) throw new Error("Failed to update");
+      toast.success("Service updated successfully");
+      await fetchServices();
+      setServiceDialogOpen(false);
+      setEditingService(null);
+      setServiceForm({ name: "", discountPercentage: 0, priceLimit: 0, imageUrl: "" });
+    } catch (err) {
+      toast.error("Failed to save service");
+    }
+  };
+
   // Variant handlers
   const handleSaveVariant = async () => {
     try {
@@ -522,7 +558,7 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20">
       {/* Navigation */}
-      <nav className="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <nav className="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
             <Image
@@ -539,7 +575,6 @@ export default function AdminDashboard() {
             <Badge variant="outline" className="border-primary/40 text-primary">Admin</Badge>
           </Link>
           <div className="flex items-center gap-4">
-            <span className="text-sm text-muted-foreground">{session.user.email}</span>
             <Button variant="outline" size="sm" onClick={handleSignOut}>
               <LogOut className="mr-2 h-4 w-4" />
               Sign Out
@@ -1298,7 +1333,9 @@ export default function AdminDashboard() {
                       <TableHead>Category</TableHead>
                       <TableHead>Discount</TableHead>
                       <TableHead>Price Limit</TableHead>
+                      <TableHead>Image</TableHead>
                       <TableHead>Available</TableHead>
+                      <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -1313,6 +1350,13 @@ export default function AdminDashboard() {
                           {service.priceLimit ? `$${service.priceLimit}` : "No limit"}
                         </TableCell>
                         <TableCell>
+                          {service.imageUrl ? (
+                            <Badge variant="secondary">Set</Badge>
+                          ) : (
+                            <Badge variant="outline">None</Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>
                           <Switch
                             checked={service.isAvailable}
                             onCheckedChange={(checked) =>
@@ -1320,12 +1364,84 @@ export default function AdminDashboard() {
                             }
                           />
                         </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setEditingService(service);
+                              setServiceForm({
+                                name: service.name,
+                                discountPercentage: service.discountPercentage,
+                                priceLimit: service.priceLimit || 0,
+                                imageUrl: service.imageUrl || "",
+                              });
+                              setServiceDialogOpen(true);
+                            }}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
               </CardContent>
             </Card>
+
+            {/* Service Edit Dialog */}
+            <Dialog open={serviceDialogOpen} onOpenChange={setServiceDialogOpen}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Edit Service</DialogTitle>
+                  <DialogDescription>Update service details and pricing</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label>Service Name</Label>
+                    <Input
+                      value={serviceForm.name}
+                      onChange={(e) => setServiceForm({ ...serviceForm, name: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Discount Percentage (%)</Label>
+                    <Input
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={serviceForm.discountPercentage}
+                      onChange={(e) => setServiceForm({ ...serviceForm, discountPercentage: parseFloat(e.target.value) || 0 })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Price Limit ($) - Optional</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="Leave 0 for no limit"
+                      value={serviceForm.priceLimit}
+                      onChange={(e) => setServiceForm({ ...serviceForm, priceLimit: parseFloat(e.target.value) || 0 })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Image URL - Optional</Label>
+                    <Input
+                      placeholder="https://..."
+                      value={serviceForm.imageUrl}
+                      onChange={(e) => setServiceForm({ ...serviceForm, imageUrl: e.target.value })}
+                    />
+                    {serviceForm.imageUrl && (
+                      <p className="text-xs text-muted-foreground">Preview image in services page</p>
+                    )}
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setServiceDialogOpen(false)}>Cancel</Button>
+                  <Button onClick={handleSaveService} className="bg-primary text-primary-foreground hover:bg-primary/90">Save Changes</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </TabsContent>
 
           {/* Transactions Tab */}
