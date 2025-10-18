@@ -2,15 +2,14 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { Navigation } from "@/components/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertCircle, ShoppingCart, Upload, Info, ExternalLink, CheckCircle, X } from "lucide-react";
+import { AlertCircle, ArrowLeft, ShoppingCart, Package, Truck, CheckCircle, Clock, Upload, Info, ExternalLink, Check, X } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import Image from "next/image";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,9 +32,10 @@ interface Service {
   updatedAt: string;
 }
 
-export default function FoodServices() {
+export default function Food4LessPage() {
   const router = useRouter();
   const { data: session } = useSession();
+  const searchParams = useSearchParams();
   
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
@@ -52,9 +52,11 @@ export default function FoodServices() {
     specialInstructions: "",
   });
   const [submitting, setSubmitting] = useState(false);
+  const [myOrders, setMyOrders] = useState<any[]>([]);
 
   useEffect(() => {
     fetchServices();
+    fetchMyOrders();
   }, []);
 
   const fetchServices = async () => {
@@ -80,6 +82,27 @@ export default function FoodServices() {
       });
       
       setServices(sorted);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchMyOrders = async () => {
+    if (!session?.user?.id) return;
+    
+    try {
+      setLoading(true);
+      const response = await fetch(`/api/orders?userId=${session.user.id}&status=any`, {
+        headers: { 
+          "Authorization": `Bearer ${localStorage.getItem("bearer_token")}`
+        }
+      });
+      
+      if (!response.ok) throw new Error("Failed to fetch orders");
+      const data = await response.json();
+      setMyOrders(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
@@ -234,335 +257,426 @@ export default function FoodServices() {
     }
   };
 
+  const getDeliveryStatusColor = (status: string) => {
+    const colors = {
+      pending: "secondary",
+      "in-transit": "warning",
+      delivered: "default",
+      cancelled: "destructive"
+    };
+    return colors[status] || "secondary";
+  };
+
+  const getDeliveryStatusIcon = (status: string) => {
+    const icons = {
+      pending: <Clock className="h-4 w-4" />,
+      "in-transit": <Truck className="h-4 w-4" />,
+      delivered: <CheckCircle className="h-4 w-4" />,
+      cancelled: <X className="h-4 w-4" />
+    };
+    return icons[status] || <Clock className="h-4 w-4" />;
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20">
       {/* Navigation */}
-      <Navigation />
-
-      {/* Hero Banner */}
-      <section className="relative overflow-hidden bg-gradient-to-r from-primary via-primary/90 to-primary/70 border-b border-border/40">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjA1IiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-30" />
-        <div className="container mx-auto px-4 py-16 md:py-24 text-center relative">
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-black text-primary-foreground mb-6 tracking-tight">
-            FOOD<span className="text-primary-foreground/80">4</span>LESS
-          </h1>
-          <p className="text-xl md:text-2xl lg:text-3xl text-primary-foreground/95 font-bold leading-relaxed max-w-4xl mx-auto">
-            Get your favorite food for less with TRUE Services. Easy. Reliable. 100% TRUE. Save up to 50% on your next meal.
-          </p>
+      <nav className="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-3">
+            <Image
+              src="https://files.jotform.com/jufs/TRUEServiceSupport/form_files/trueservicestransparent.67f010b8679bd1.07484258.png?md5=iFg1NnHrukcAtXkiT2Ci5Q&expires=1760754468"
+              alt="TrueServices Logo"
+              width={50}
+              height={50}
+              className="object-contain"
+              unoptimized
+            />
+            <span className="text-2xl font-bold tracking-tight text-foreground">
+              True<span className="text-primary">Services</span>
+            </span>
+          </Link>
+          <div className="flex items-center gap-6">
+            <Link href="/services" className="text-sm font-medium hover:text-primary transition-colors">
+              Services
+            </Link>
+            <Link href="/products" className="text-sm font-medium hover:text-primary transition-colors">
+              Products
+            </Link>
+            <Link href="/deposit" className="text-sm font-medium hover:text-primary transition-colors">
+              Deposit
+            </Link>
+            {session?.user ? (
+              <>
+                <Link href="/account" className="text-sm font-medium hover:text-primary transition-colors">
+                  Account
+                </Link>
+                {session.user.role === "admin" && (
+                  <Button asChild size="sm">
+                    <Link href="/admin">Admin</Link>
+                  </Button>
+                )}
+              </>
+            ) : (
+              <>
+                <Button asChild variant="ghost" size="sm">
+                  <Link href="/sign-in">Sign In</Link>
+                </Button>
+                <Button asChild size="sm">
+                  <Link href="/sign-up">Sign Up</Link>
+                </Button>
+              </>
+            )}
+          </div>
         </div>
-      </section>
+      </nav>
 
-      {/* How It Works Section - Without Cards */}
-      <section className="container mx-auto px-4 py-12 md:py-16">
-        <h2 className="text-3xl md:text-4xl font-bold text-center mb-8">How It Works</h2>
+      {/* Hero Banner - More Prominent for Standalone Feel */}
+      <section className="container mx-auto px-4 py-16 md:py-24">
+        <Button variant="ghost" asChild className="mb-6">
+          <Link href="/services">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Services
+          </Link>
+        </Button>
         
-        <div className="max-w-4xl mx-auto space-y-8">
-          {/* Step 1 */}
-          <div className="flex flex-col items-center text-center space-y-4">
-            <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-black text-xl">
-              1
-            </div>
-            <h3 className="text-xl md:text-2xl font-bold">Cart Screenshot</h3>
-            <p className="text-base md:text-lg text-muted-foreground max-w-2xl">
-              Open your DoorDash cart, ensure all items are visible, and take a screenshot
+        <div className="relative overflow-hidden bg-gradient-to-br from-primary via-primary to-primary/80 rounded-3xl p-16 md:p-20 text-center shadow-2xl shadow-primary/30 border-4 border-primary/20">
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjA1IiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-30" />
+          <div className="relative space-y-6">
+            <h1 className="text-6xl md:text-8xl font-black text-primary-foreground tracking-tighter">
+              FOOD<span className="text-primary-foreground/90">4</span>LESS
+            </h1>
+            <p className="text-xl md:text-3xl text-primary-foreground font-bold max-w-4xl mx-auto leading-relaxed">
+              Get your favorite food for less with TRUE Services. Easy. Reliable. 100% TRUE. Save up to 50% on your next meal.
             </p>
           </div>
-          
-          {/* Cart Image - No Card */}
-          <div className="flex justify-center">
-            <div className="relative w-full max-w-md h-[400px] md:h-[500px]">
-              <Image
-                src="https://files.jotform.com/jufs/TRUEServiceSupport/form_files/DD-2.682168432a3f96.74677364.png?md5=TWfuQePJMp7A_osAPJ97VQ&expires=1760753269"
-                alt="Cart Screenshot Example"
-                fill
-                className="object-contain"
-                unoptimized
-              />
-            </div>
-          </div>
-
-          {/* Step 2 */}
-          <div className="flex flex-col items-center text-center space-y-4">
-            <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-black text-xl">
-              2
-            </div>
-            <h3 className="text-xl md:text-2xl font-bold">Checkout Total Screenshot</h3>
-            <p className="text-base md:text-lg text-muted-foreground max-w-2xl">
-              Proceed to checkout, ensure the total is visible, and take a screenshot
-            </p>
-          </div>
-
-          {/* Checkout Image - No Card */}
-          <div className="flex justify-center">
-            <div className="relative w-full max-w-md h-[400px] md:h-[500px]">
-              <Image
-                src="https://files.jotform.com/jufs/TRUEServiceSupport/form_files/DDS-2.68216812cd78e2.99249574.png?md5=SPJFI0HPsANa_kdQAEYg-w&expires=1760753270"
-                alt="Checkout Screenshot Example"
-                fill
-                className="object-contain"
-                unoptimized
-              />
-            </div>
-          </div>
-
-          {/* Important Notice */}
-          <Alert variant="destructive" className="max-w-2xl mx-auto">
-            <AlertCircle className="h-5 w-5" />
-            <AlertTitle className="text-lg font-bold">Important</AlertTitle>
-            <AlertDescription className="text-base">
-              Any attempt to falsify your total will be detected and may result in a permanent ban from our services.
-            </AlertDescription>
-          </Alert>
         </div>
       </section>
 
-      {/* Available Services - Square App Icons */}
-      <section className="container mx-auto px-4 py-12 md:py-16 bg-muted/30">
-        <div className="text-center mb-10">
-          <h2 className="text-3xl md:text-4xl font-bold mb-2">Available Services</h2>
-          <p className="text-base md:text-lg text-muted-foreground">Choose your platform and start saving</p>
-        </div>
+      {/* How It Works */}
+      <section className="container mx-auto px-4 pb-12">
+        <Alert className="border-primary/30 bg-primary/5 shadow-lg">
+          <Info className="h-5 w-5 text-primary" />
+          <AlertTitle className="text-2xl font-bold text-primary mb-4">How It Works</AlertTitle>
+          <AlertDescription className="text-base space-y-3">
+            <div className="flex items-center gap-3">
+              <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground font-bold">1</span>
+              <p className="font-semibold">Add items to your cart on the food delivery app</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground font-bold">2</span>
+              <p className="font-semibold">Take a screenshot of your cart and submit your order</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground font-bold">3</span>
+              <p className="font-semibold">We process it with exclusive discounts—you save big!</p>
+            </div>
+          </AlertDescription>
+        </Alert>
+      </section>
 
+      {/* Available Services - App Icon Style WITH Info */}
+      <section className="container mx-auto px-4 pb-16">
+        <h2 className="text-4xl font-bold mb-8 text-center">Available Services</h2>
+        
         {loading ? (
-          <div className="flex justify-center gap-4 md:gap-6 flex-wrap">
+          <div className="flex justify-center gap-8">
             {[1, 2, 3].map((i) => (
-              <Skeleton key={i} className="w-24 h-24 md:w-32 md:h-32 rounded-2xl" />
+              <Skeleton key={i} className="h-32 w-32 rounded-2xl" />
             ))}
           </div>
         ) : (
-          <div className="flex justify-center gap-4 md:gap-6 flex-wrap max-w-2xl mx-auto">
+          <div className="flex flex-wrap justify-center gap-6 md:gap-8">
             {services.map((service) => (
-              <button
+              <div
                 key={service.id}
-                onClick={() => handleOrderClick(service)}
-                disabled={!service.isAvailable}
-                className="relative group"
+                className="group relative"
               >
-                <div className={`w-24 h-24 md:w-32 md:h-32 rounded-2xl shadow-lg transition-all ${
-                  service.isAvailable 
-                    ? 'hover:scale-110 hover:shadow-xl hover:shadow-primary/20' 
-                    : 'opacity-50'
-                } bg-gradient-to-br from-card to-card/80 border-2 border-border hover:border-primary flex flex-col items-center justify-center p-3 md:p-4`}>
+                <div
+                  className={`relative w-28 h-28 md:w-32 md:h-32 rounded-3xl shadow-xl ${
+                    service.isAvailable
+                      ? "bg-gradient-to-br from-primary/90 to-primary cursor-pointer hover:scale-110 transition-transform"
+                      : "bg-muted/50 opacity-50"
+                  } flex items-center justify-center overflow-hidden border-4 border-background`}
+                  onClick={() => service.isAvailable && handleOrderClick(service)}
+                >
                   {service.imageUrl ? (
-                    <div className="relative w-12 h-12 md:w-16 md:h-16 mb-2">
-                      <Image
-                        src={service.imageUrl}
-                        alt={service.name}
-                        fill
-                        className="object-contain"
-                        unoptimized
-                      />
-                    </div>
+                    <Image
+                      src={service.imageUrl}
+                      alt={service.name}
+                      fill
+                      className="object-cover"
+                      unoptimized
+                    />
                   ) : (
-                    <ShoppingCart className="w-12 h-12 md:w-16 md:h-16 mb-2 text-primary" />
+                    <ShoppingCart className="h-12 w-12 md:h-14 md:w-14 text-primary-foreground" />
                   )}
-                  <span className="text-xs md:text-sm font-bold text-center line-clamp-2">
-                    {service.name.split(' ')[0]}
-                  </span>
-                </div>
-                <div className="absolute -top-2 -right-2">
-                  <Badge className="text-xs font-bold bg-primary text-primary-foreground shadow-lg">
+                  <div className="absolute top-1 right-1 bg-destructive text-destructive-foreground px-2 py-1 rounded-full text-xs font-bold shadow-lg">
                     {service.discountPercentage}%
-                  </Badge>
+                  </div>
                 </div>
-              </button>
+                <div className="text-center mt-3 max-w-[140px]">
+                  <p className="font-bold text-sm truncate">{service.name}</p>
+                  <Badge variant={service.isAvailable ? "default" : "secondary"} className="mt-1 text-xs">
+                    {service.isAvailable ? "✔ Available" : "✖ Unavailable"}
+                  </Badge>
+                  {service.priceLimit && (
+                    <p className="text-xs text-muted-foreground mt-1">Up to ${service.priceLimit}</p>
+                  )}
+                </div>
+              </div>
             ))}
           </div>
         )}
       </section>
 
-      {/* Order Limits Section */}
-      <section className="container mx-auto px-4 py-12 md:py-16">
-        <h2 className="text-3xl md:text-4xl font-bold text-center mb-10">Order Limits</h2>
+      {/* Order Limits Section - Detailed Format */}
+      <section className="container mx-auto px-4 pb-16">
+        <h2 className="text-4xl font-bold mb-8 text-center">Order Limits & Pricing</h2>
         
         <div className="max-w-4xl mx-auto space-y-4">
           {/* Uber Eats - Small Order */}
-          <Card className="overflow-hidden border-border/40 hover:border-primary/50 transition-colors">
-            <CardHeader className="pb-4">
-              <div className="flex items-center justify-between flex-wrap gap-2">
-                <CardTitle className="text-xl md:text-2xl font-bold">Uber Eats - Small Order</CardTitle>
-                <Badge className="bg-green-600 hover:bg-green-700 text-white">
-                  <CheckCircle className="w-4 h-4 mr-1" />
-                  Available
-                </Badge>
+          <Card className="border-2 border-green-500/30 bg-card/80 backdrop-blur hover:shadow-lg transition-all">
+            <CardContent className="p-6">
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-2">
+                    <h3 className="text-xl font-bold">Uber Eats - Small Order</h3>
+                    <Badge className="bg-green-500/20 text-green-500 border-green-500/30">
+                      <Check className="h-3 w-3 mr-1" />
+                      Available
+                    </Badge>
+                  </div>
+                  <p className="text-3xl font-black text-primary mb-2">40% OFF</p>
+                  <p className="text-sm text-muted-foreground">$20-$30 Subtotal Limit • Delivery Only</p>
+                </div>
               </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="text-2xl md:text-3xl font-black text-primary">
-                Uber Eats - Small Order 40% OFF
+              <div className="flex gap-3 mt-4">
+                <Button className="flex-1 bg-primary hover:bg-primary/90" onClick={() => {
+                  const service = services.find(s => s.name.includes("Uber") && s.priceLimit === 30);
+                  if (service) handleOrderClick(service);
+                }}>
+                  Place Order
+                </Button>
+                <Button variant="outline" className="flex-1" asChild>
+                  <a href="https://ubereats.com" target="_blank" rel="noopener noreferrer">
+                    Browse <ExternalLink className="ml-2 h-4 w-4" />
+                  </a>
+                </Button>
               </div>
-              <p className="text-base md:text-lg text-muted-foreground">
-                $20-$30 Subtotal Limit • Delivery Only
-              </p>
             </CardContent>
-            <CardFooter className="gap-2 flex-col sm:flex-row">
-              <Button className="w-full sm:w-auto bg-primary text-primary-foreground hover:bg-primary/90">
-                <ShoppingCart className="mr-2 h-4 w-4" />
-                Place Order
-              </Button>
-              <Button variant="outline" className="w-full sm:w-auto">
-                <ExternalLink className="mr-2 h-4 w-4" />
-                Browse
-              </Button>
-            </CardFooter>
           </Card>
 
           {/* Uber Eats - Large Order */}
-          <Card className="overflow-hidden border-border/40 hover:border-primary/50 transition-colors">
-            <CardHeader className="pb-4">
-              <div className="flex items-center justify-between flex-wrap gap-2">
-                <CardTitle className="text-xl md:text-2xl font-bold">Uber Eats - Large Order</CardTitle>
-                <Badge className="bg-green-600 hover:bg-green-700 text-white">
-                  <CheckCircle className="w-4 h-4 mr-1" />
-                  Available
-                </Badge>
+          <Card className="border-2 border-green-500/30 bg-card/80 backdrop-blur hover:shadow-lg transition-all">
+            <CardContent className="p-6">
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-2">
+                    <h3 className="text-xl font-bold">Uber Eats - Large Order</h3>
+                    <Badge className="bg-green-500/20 text-green-500 border-green-500/30">
+                      <Check className="h-3 w-3 mr-1" />
+                      Available
+                    </Badge>
+                  </div>
+                  <p className="text-3xl font-black text-primary mb-2">40% OFF</p>
+                  <p className="text-sm text-muted-foreground">$30-$70 Total Limit • Delivery Only</p>
+                </div>
               </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="text-2xl md:text-3xl font-black text-primary">
-                Uber Eats - Large Order 40% OFF
+              <div className="flex gap-3 mt-4">
+                <Button className="flex-1 bg-primary hover:bg-primary/90" onClick={() => {
+                  const service = services.find(s => s.name.includes("Uber") && s.priceLimit === 70);
+                  if (service) handleOrderClick(service);
+                }}>
+                  Place Order
+                </Button>
+                <Button variant="outline" className="flex-1" asChild>
+                  <a href="https://ubereats.com" target="_blank" rel="noopener noreferrer">
+                    Browse <ExternalLink className="ml-2 h-4 w-4" />
+                  </a>
+                </Button>
               </div>
-              <p className="text-base md:text-lg text-muted-foreground">
-                $30-$70 Total Limit • Delivery Only
-              </p>
             </CardContent>
-            <CardFooter className="gap-2 flex-col sm:flex-row">
-              <Button className="w-full sm:w-auto bg-primary text-primary-foreground hover:bg-primary/90">
-                <ShoppingCart className="mr-2 h-4 w-4" />
-                Place Order
-              </Button>
-              <Button variant="outline" className="w-full sm:w-auto">
-                <ExternalLink className="mr-2 h-4 w-4" />
-                Browse
-              </Button>
-            </CardFooter>
           </Card>
 
           {/* Uber Eats - $100+ Order */}
-          <Card className="overflow-hidden border-border/40 hover:border-primary/50 transition-colors">
-            <CardHeader className="pb-4">
-              <div className="flex items-center justify-between flex-wrap gap-2">
-                <CardTitle className="text-xl md:text-2xl font-bold">Uber Eats - $100+ Order</CardTitle>
-                <Badge className="bg-green-600 hover:bg-green-700 text-white">
-                  <CheckCircle className="w-4 h-4 mr-1" />
-                  Available
-                </Badge>
+          <Card className="border-2 border-green-500/30 bg-card/80 backdrop-blur hover:shadow-lg transition-all">
+            <CardContent className="p-6">
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-2">
+                    <h3 className="text-xl font-bold">Uber Eats - $100+ Order</h3>
+                    <Badge className="bg-green-500/20 text-green-500 border-green-500/30">
+                      <Check className="h-3 w-3 mr-1" />
+                      Available
+                    </Badge>
+                  </div>
+                  <p className="text-3xl font-black text-primary mb-2">55% OFF</p>
+                  <p className="text-sm text-muted-foreground">$100-$300 Total Max • Delivery Only</p>
+                </div>
               </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="text-2xl md:text-3xl font-black text-primary">
-                Uber Eats - $100+ Order 55% OFF
+              <div className="flex gap-3 mt-4">
+                <Button className="flex-1 bg-primary hover:bg-primary/90" onClick={() => {
+                  const service = services.find(s => s.name.includes("Uber") && s.priceLimit === 300);
+                  if (service) handleOrderClick(service);
+                }}>
+                  Place Order
+                </Button>
+                <Button variant="outline" className="flex-1" asChild>
+                  <a href="https://ubereats.com" target="_blank" rel="noopener noreferrer">
+                    Browse <ExternalLink className="ml-2 h-4 w-4" />
+                  </a>
+                </Button>
               </div>
-              <p className="text-base md:text-lg text-muted-foreground">
-                $100-$300 Total Max • Delivery Only
-              </p>
             </CardContent>
-            <CardFooter className="gap-2 flex-col sm:flex-row">
-              <Button className="w-full sm:w-auto bg-primary text-primary-foreground hover:bg-primary/90">
-                <ShoppingCart className="mr-2 h-4 w-4" />
-                Place Order
-              </Button>
-              <Button variant="outline" className="w-full sm:w-auto">
-                <ExternalLink className="mr-2 h-4 w-4" />
-                Browse
-              </Button>
-            </CardFooter>
           </Card>
 
           {/* DoorDash - Small Order */}
-          <Card className="overflow-hidden border-border/40 hover:border-primary/50 transition-colors">
-            <CardHeader className="pb-4">
-              <div className="flex items-center justify-between flex-wrap gap-2">
-                <CardTitle className="text-xl md:text-2xl font-bold">DoorDash - Small Order</CardTitle>
-                <Badge className="bg-green-600 hover:bg-green-700 text-white">
-                  <CheckCircle className="w-4 h-4 mr-1" />
-                  Available
-                </Badge>
+          <Card className="border-2 border-green-500/30 bg-card/80 backdrop-blur hover:shadow-lg transition-all">
+            <CardContent className="p-6">
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-2">
+                    <h3 className="text-xl font-bold">DoorDash - Small Order</h3>
+                    <Badge className="bg-green-500/20 text-green-500 border-green-500/30">
+                      <Check className="h-3 w-3 mr-1" />
+                      Available
+                    </Badge>
+                  </div>
+                  <p className="text-3xl font-black text-primary mb-2">40% OFF</p>
+                  <p className="text-sm text-muted-foreground">$35-$200 Subtotal Limit • Delivery Only</p>
+                </div>
               </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="text-2xl md:text-3xl font-black text-primary">
-                DoorDash - Small Order 40% OFF
+              <div className="flex gap-3 mt-4">
+                <Button className="flex-1 bg-primary hover:bg-primary/90" onClick={() => {
+                  const service = services.find(s => s.name.includes("DoorDash") && s.priceLimit === 200);
+                  if (service) handleOrderClick(service);
+                }}>
+                  Place Order
+                </Button>
+                <Button variant="outline" className="flex-1" asChild>
+                  <a href="https://doordash.com" target="_blank" rel="noopener noreferrer">
+                    Browse <ExternalLink className="ml-2 h-4 w-4" />
+                  </a>
+                </Button>
               </div>
-              <p className="text-base md:text-lg text-muted-foreground">
-                $35-$200 Subtotal Limit • Delivery Only
-              </p>
             </CardContent>
-            <CardFooter className="gap-2 flex-col sm:flex-row">
-              <Button className="w-full sm:w-auto bg-primary text-primary-foreground hover:bg-primary/90">
-                <ShoppingCart className="mr-2 h-4 w-4" />
-                Place Order
-              </Button>
-              <Button variant="outline" className="w-full sm:w-auto">
-                <ExternalLink className="mr-2 h-4 w-4" />
-                Browse
-              </Button>
-            </CardFooter>
           </Card>
 
           {/* DoorDash - Large Order */}
-          <Card className="overflow-hidden border-border/40 bg-muted/50">
-            <CardHeader className="pb-4">
-              <div className="flex items-center justify-between flex-wrap gap-2">
-                <CardTitle className="text-xl md:text-2xl font-bold text-muted-foreground">DoorDash - Large Order</CardTitle>
-                <Badge variant="destructive">
-                  <X className="w-4 h-4 mr-1" />
-                  Unavailable
-                </Badge>
+          <Card className="border-2 border-red-500/30 bg-card/80 backdrop-blur opacity-70">
+            <CardContent className="p-6">
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-2">
+                    <h3 className="text-xl font-bold">DoorDash - Large Order</h3>
+                    <Badge className="bg-red-500/20 text-red-500 border-red-500/30">
+                      <X className="h-3 w-3 mr-1" />
+                      Unavailable
+                    </Badge>
+                  </div>
+                  <p className="text-3xl font-black text-muted-foreground mb-2">40% OFF</p>
+                  <p className="text-sm text-muted-foreground">$50-$999+ Total Limit • Delivery Only</p>
+                </div>
               </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="text-2xl md:text-3xl font-black text-muted-foreground">
-                DoorDash - Large Order 40% OFF
+              <div className="flex gap-3 mt-4">
+                <Button className="flex-1" disabled>
+                  Place Order
+                </Button>
+                <Button variant="outline" className="flex-1" asChild>
+                  <a href="https://doordash.com" target="_blank" rel="noopener noreferrer">
+                    Browse <ExternalLink className="ml-2 h-4 w-4" />
+                  </a>
+                </Button>
               </div>
-              <p className="text-base md:text-lg text-muted-foreground">
-                $50-$999+ Total Limit • Delivery Only
-              </p>
             </CardContent>
-            <CardFooter className="gap-2 flex-col sm:flex-row">
-              <Button disabled className="w-full sm:w-auto">
-                <ShoppingCart className="mr-2 h-4 w-4" />
-                Place Order
-              </Button>
-              <Button variant="outline" disabled className="w-full sm:w-auto">
-                <ExternalLink className="mr-2 h-4 w-4" />
-                Browse
-              </Button>
-            </CardFooter>
           </Card>
 
           {/* Grubhub - Order */}
-          <Card className="overflow-hidden border-border/40 bg-muted/50">
-            <CardHeader className="pb-4">
-              <div className="flex items-center justify-between flex-wrap gap-2">
-                <CardTitle className="text-xl md:text-2xl font-bold text-muted-foreground">Grubhub - Order</CardTitle>
-                <Badge variant="destructive">
-                  <X className="w-4 h-4 mr-1" />
-                  Unavailable
-                </Badge>
+          <Card className="border-2 border-red-500/30 bg-card/80 backdrop-blur opacity-70">
+            <CardContent className="p-6">
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-2">
+                    <h3 className="text-xl font-bold">Grubhub - Order</h3>
+                    <Badge className="bg-red-500/20 text-red-500 border-red-500/30">
+                      <X className="h-3 w-3 mr-1" />
+                      Unavailable
+                    </Badge>
+                  </div>
+                  <p className="text-3xl font-black text-muted-foreground mb-2">40% OFF</p>
+                  <p className="text-sm text-muted-foreground">$20-$100 Total Limit • Delivery Only</p>
+                </div>
               </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="text-2xl md:text-3xl font-black text-muted-foreground">
-                Grubhub - Order 40% OFF
+              <div className="flex gap-3 mt-4">
+                <Button className="flex-1" disabled>
+                  Place Order
+                </Button>
+                <Button variant="outline" className="flex-1" asChild>
+                  <a href="https://grubhub.com" target="_blank" rel="noopener noreferrer">
+                    Browse <ExternalLink className="ml-2 h-4 w-4" />
+                  </a>
+                </Button>
               </div>
-              <p className="text-base md:text-lg text-muted-foreground">
-                $20-$100 Total Limit • Delivery Only
-              </p>
             </CardContent>
-            <CardFooter className="gap-2 flex-col sm:flex-row">
-              <Button disabled className="w-full sm:w-auto">
-                <ShoppingCart className="mr-2 h-4 w-4" />
-                Place Order
-              </Button>
-              <Button variant="outline" disabled className="w-full sm:w-auto">
-                <ExternalLink className="mr-2 h-4 w-4" />
-                Browse
-              </Button>
-            </CardFooter>
           </Card>
         </div>
       </section>
+
+      {/* My Orders Section */}
+      {session?.user && myOrders.length > 0 && (
+        <section className="container mx-auto px-4 pb-20">
+          <div className="bg-muted/30 backdrop-blur rounded-xl p-8 border border-border/40">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-3xl font-bold">My Orders</h2>
+              <Button variant="outline" size="sm" onClick={fetchMyOrders}>
+                Refresh Status
+              </Button>
+            </div>
+
+            <div className="space-y-4">
+              {myOrders.map((order) => (
+                <Card key={order.id} className="border-border/40 bg-card/50 backdrop-blur">
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <CardTitle className="text-lg">Order #{order.id}</CardTitle>
+                        <CardDescription>
+                          Placed {new Date(order.createdAt).toLocaleString()}
+                        </CardDescription>
+                      </div>
+                      <Badge variant="outline" className={getDeliveryStatusColor(order.deliveryStatus)}>
+                        <span className="mr-2">{getDeliveryStatusIcon(order.deliveryStatus)}</span>
+                        {order.deliveryStatus.replace("_", " ").toUpperCase()}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <p className="text-muted-foreground">Amount</p>
+                        <p className="font-bold text-lg text-primary">${order.totalAmount.toFixed(2)}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Payment Status</p>
+                        <Badge variant={order.paymentStatus === "confirmed" ? "default" : "secondary"}>
+                          {order.paymentStatus}
+                        </Badge>
+                      </div>
+                    </div>
+                  </CardContent>
+                  {order.deliveryStatus === "delivered" && (
+                    <CardFooter className="bg-muted/30">
+                      <Button variant="outline" className="w-full">
+                        Leave a Review
+                      </Button>
+                    </CardFooter>
+                  )}
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Order Dialog */}
       <Dialog open={orderDialogOpen} onOpenChange={setOrderDialogOpen}>
@@ -722,10 +836,10 @@ export default function FoodServices() {
       </Dialog>
 
       {/* Footer */}
-      <footer className="border-t border-border/40 bg-muted/20 backdrop-blur mt-12 md:mt-20">
+      <footer className="border-t border-border/40 bg-muted/20 backdrop-blur mt-20">
         <div className="container mx-auto px-4 py-8 text-center text-sm text-muted-foreground">
-          <p>&copy; 2024 TrueServices. All rights reserved.</p>
-          <p className="mt-2">Built on Trust. Powered by Experience.</p>
+          <p>&copy; 2024 TrueServices FOOD4LESS. All rights reserved.</p>
+          <p className="mt-2">Easy. Reliable. 100% TRUE.</p>
         </div>
       </footer>
     </div>
