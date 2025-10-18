@@ -296,13 +296,13 @@ export default function FoodServices() {
           </p>
           
           <div className="flex flex-wrap items-center justify-center gap-4">
-            <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-6 text-lg font-black shadow-2xl shadow-primary/30">
+            <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground px-7 py-5 text-base font-black shadow-2xl shadow-primary/30">
               <Link href="#services">
                 <ShoppingCart className="mr-2 h-5 w-5" />
                 Start Saving Now
               </Link>
             </Button>
-            <Button asChild size="lg" variant="outline" className="border-zinc-700 hover:bg-zinc-900 text-white px-8 py-6 text-lg font-bold">
+            <Button asChild size="lg" variant="outline" className="border-zinc-700 hover:bg-zinc-900 text-white px-7 py-5 text-base font-bold">
               <Link href="#how-it-works">
                 <Info className="mr-2 h-5 w-5" />
                 How It Works
@@ -327,7 +327,7 @@ export default function FoodServices() {
             <div className="space-y-8">
               {/* Step 1 */}
               <div className="bg-zinc-900/80 rounded-xl p-6 border border-zinc-800/80">
-                <div className="flex items-start gap-4 mb-4">
+                <div className="flex items-start gap-4">
                   <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-black text-xl flex-shrink-0">1</div>
                   <div className="flex-1">
                     <h3 className="text-xl font-black text-white mb-3">Upload Your Cart Screenshot</h3>
@@ -341,22 +341,22 @@ export default function FoodServices() {
                     </ul>
                   </div>
                 </div>
-                <div className="mt-4 w-full flex justify-center">
-                  <div className="relative w-full max-w-2xl h-[500px] rounded-lg border-2 border-zinc-700 overflow-hidden shadow-2xl bg-white">
-                    <Image
-                      src="https://files.jotform.com/jufs/TRUEServiceSupport/form_files/DD-2.682168432a3f96.74677364.png?md5=TWfuQePJMp7A_osAPJ97VQ&expires=1760753269"
-                      alt="Cart Screenshot Example"
-                      fill
-                      className="object-contain"
-                      unoptimized
-                    />
-                  </div>
+              </div>
+              <div className="w-full">
+                <div className="relative w-full h-[520px] rounded-lg overflow-hidden shadow-2xl">
+                  <Image
+                    src="https://files.jotform.com/jufs/TRUEServiceSupport/form_files/DD-2.682168432a3f96.74677364.png?md5=TWfuQePJMp7A_osAPJ97VQ&expires=1760753269"
+                    alt="Cart Screenshot Example"
+                    fill
+                    className="object-contain bg-white"
+                    unoptimized
+                  />
                 </div>
               </div>
 
               {/* Step 2 */}
               <div className="bg-zinc-900/80 rounded-xl p-6 border border-zinc-800/80">
-                <div className="flex items-start gap-4 mb-4">
+                <div className="flex items-start gap-4">
                   <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-black text-xl flex-shrink-0">2</div>
                   <div className="flex-1">
                     <h3 className="text-xl font-black text-white mb-3">Upload Checkout Total Screenshot</h3>
@@ -370,16 +370,16 @@ export default function FoodServices() {
                     </ul>
                   </div>
                 </div>
-                <div className="mt-4 w-full flex justify-center">
-                  <div className="relative w-full max-w-2xl h-[500px] rounded-lg border-2 border-zinc-700 overflow-hidden shadow-2xl bg-white">
-                    <Image
-                      src="https://files.jotform.com/jufs/TRUEServiceSupport/form_files/DDS-2.68216812cd78e2.99249574.png?md5=SPJFI0HPsANa_kdQAEYg-w&expires=1760753270"
-                      alt="Checkout Total Screenshot Example"
-                      fill
-                      className="object-contain"
-                      unoptimized
-                    />
-                  </div>
+              </div>
+              <div className="w-full">
+                <div className="relative w-full h-[520px] rounded-lg overflow-hidden shadow-2xl">
+                  <Image
+                    src="https://files.jotform.com/jufs/TRUEServiceSupport/form_files/DDS-2.68216812cd78e2.99249574.png?md5=SPJFI0HPsANa_kdQAEYg-w&expires=1760753270"
+                    alt="Checkout Total Screenshot Example"
+                    fill
+                    className="object-contain bg-white"
+                    unoptimized
+                  />
                 </div>
               </div>
             </div>
