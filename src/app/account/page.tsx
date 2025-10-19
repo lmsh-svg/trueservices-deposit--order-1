@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useSession } from "@/lib/auth-client";
+import { useTransactionMonitor } from "@/hooks/useTransactionMonitor";
 import {
   ArrowLeft,
   Loader2,
@@ -17,6 +18,10 @@ import {
   Plus,
   Eye,
   Star,
+  Clock,
+  CheckCircle,
+  WifiOff,
+  Wifi,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -55,6 +60,14 @@ export default function AccountPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [rewards, setRewards] = useState<LoyaltyReward[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [cryptoAddresses, setCryptoAddresses] = useState<string[]>([]);
+  const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true);
+
+  // WebSocket monitoring for real-time transaction updates
+  const { newTransactions, isConnected, clearTransactions } = useTransactionMonitor(
+    cryptoAddresses,
+    autoRefreshEnabled
+  );
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -63,75 +76,109 @@ export default function AccountPage() {
     }
   }, [session, isPending, router]);
 
-  // Fetch user data
+  // Fetch crypto addresses for monitoring
   useEffect(() => {
-    const fetchUserData = async () => {
-      if (!session?.user) return;
-
+    const fetchAddresses = async () => {
       try {
         const token = localStorage.getItem("bearer_token");
-
-        // Fetch user profile to get balance
-        const userResponse = await fetch(`/api/users?id=${session.user.id}`, {
+        const response = await fetch("/api/crypto-addresses?isActive=true", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
-        const userData = await userResponse.json();
-        if (userData.success && userData.data.length > 0) {
-          setBalance(userData.data[0].balance || 0);
-          setLoyaltyPoints(userData.data[0].loyalty_points || 0);
-        }
-
-        // Fetch transactions
-        const txResponse = await fetch(`/api/transactions`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        const txData = await txResponse.json();
-        if (txData.success) {
-          const userTx = txData.data.filter(
-            (tx: Transaction) => tx.user_id === session.user.id
-          );
-          setTransactions(userTx);
-        }
-
-        // Fetch orders
-        const ordersResponse = await fetch(`/api/orders`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        const ordersData = await ordersResponse.json();
-        if (ordersData.success) {
-          const userOrders = ordersData.data.filter(
-            (order: Order) => order.user_id === session.user.id
-          );
-          setOrders(userOrders);
-        }
-
-        // Fetch loyalty rewards
-        const rewardsResponse = await fetch(`/api/loyalty-rewards`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        const rewardsData = await rewardsResponse.json();
-        if (rewardsData.success) {
-          const userRewards = rewardsData.data.filter(
-            (reward: LoyaltyReward) => reward.user_id === session.user.id
-          );
-          setRewards(userRewards);
+        const data = await response.json();
+        if (Array.isArray(data)) {
+          const addresses = data.map((addr: any) => addr.address);
+          setCryptoAddresses(addresses);
         }
       } catch (error) {
-        console.error("Error fetching user data:", error);
-        toast.error("Failed to load account data");
-      } finally {
-        setIsLoading(false);
+        console.error("Error fetching crypto addresses:", error);
       }
     };
 
+    if (session?.user) {
+      fetchAddresses();
+    }
+  }, [session]);
+
+  // Handle new transactions detected by WebSocket
+  useEffect(() => {
+    if (newTransactions.length > 0) {
+      toast.info("New transaction detected! Refreshing...");
+      fetchUserData();
+      clearTransactions();
+    }
+  }, [newTransactions]);
+
+  // Fetch user data
+  const fetchUserData = async () => {
+    if (!session?.user) return;
+
+    try {
+      const token = localStorage.getItem("bearer_token");
+
+      // Fetch user profile to get balance
+      const userResponse = await fetch(`/api/users?id=${session.user.id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const userData = await userResponse.json();
+      if (userData.success && userData.data.length > 0) {
+        setBalance(userData.data[0].balance || 0);
+        setLoyaltyPoints(userData.data[0].loyalty_points || 0);
+      }
+
+      // Fetch transactions
+      const txResponse = await fetch(`/api/transactions`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const txData = await txResponse.json();
+      if (txData.success) {
+        const userTx = txData.data.filter(
+          (tx: Transaction) => tx.user_id === session.user.id
+        );
+        setTransactions(userTx);
+      }
+
+      // Fetch orders
+      const ordersResponse = await fetch(`/api/orders`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const ordersData = await ordersResponse.json();
+      if (ordersData.success) {
+        const userOrders = ordersData.data.filter(
+          (order: Order) => order.user_id === session.user.id
+        );
+        setOrders(userOrders);
+      }
+
+      // Fetch loyalty rewards
+      const rewardsResponse = await fetch(`/api/loyalty-rewards`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const rewardsData = await rewardsResponse.json();
+      if (rewardsData.success) {
+        const userRewards = rewardsData.data.filter(
+          (reward: LoyaltyReward) => reward.user_id === session.user.id
+        );
+        setRewards(userRewards);
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+      toast.error("Failed to load account data");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
     if (session?.user) {
       fetchUserData();
     }
@@ -184,6 +231,10 @@ export default function AccountPage() {
     return null;
   }
 
+  // Separate pending and verified transactions
+  const pendingTransactions = transactions.filter(tx => tx.status === 'pending');
+  const verifiedTransactions = transactions.filter(tx => tx.status === 'verified');
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted">
       {/* Navigation */}
@@ -194,7 +245,19 @@ export default function AccountPage() {
             Back to Home
           </Button>
           <h1 className="text-xl font-bold">My Account</h1>
-          <div className="w-24"></div>
+          <div className="flex items-center gap-2">
+            {isConnected ? (
+              <Badge variant="outline" className="gap-1">
+                <Wifi className="h-3 w-3" />
+                Live
+              </Badge>
+            ) : (
+              <Badge variant="outline" className="gap-1 opacity-50">
+                <WifiOff className="h-3 w-3" />
+                Offline
+              </Badge>
+            )}
+          </div>
         </div>
       </nav>
 
@@ -259,7 +322,7 @@ export default function AccountPage() {
           </Card>
         </div>
 
-        {/* User Info - Simplified, No Email/Name Display */}
+        {/* User Info - Simplified */}
         <Card className="p-6 mb-8">
           <h2 className="text-xl font-bold mb-4">Account Information</h2>
           <div className="flex items-center gap-4">
@@ -293,6 +356,9 @@ export default function AccountPage() {
             <TabsTrigger value="transactions">
               <Receipt className="h-4 w-4 mr-2" />
               Transactions
+              {pendingTransactions.length > 0 && (
+                <Badge variant="secondary" className="ml-2">{pendingTransactions.length}</Badge>
+              )}
             </TabsTrigger>
             <TabsTrigger value="rewards">
               <Award className="h-4 w-4 mr-2" />
@@ -360,8 +426,60 @@ export default function AccountPage() {
 
           <TabsContent value="transactions" className="mt-6">
             <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-4">Transaction History</h3>
-              {transactions.length === 0 ? (
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold">Transaction History</h3>
+                <Button
+                  onClick={fetchUserData}
+                  size="sm"
+                  variant="outline"
+                >
+                  <Loader2 className="h-4 w-4 mr-2" />
+                  Refresh
+                </Button>
+              </div>
+
+              {/* Pending Transactions Section */}
+              {pendingTransactions.length > 0 && (
+                <div className="mb-6">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Clock className="h-4 w-4 text-yellow-600" />
+                    <h4 className="font-semibold text-sm">Pending Confirmations</h4>
+                  </div>
+                  <div className="space-y-3">
+                    {pendingTransactions.map((tx) => (
+                      <div
+                        key={tx.id}
+                        className="flex items-center justify-between p-4 border border-yellow-500/20 rounded-lg bg-yellow-500/5"
+                      >
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <p className="font-medium">{tx.cryptocurrency} Deposit</p>
+                            <Badge variant="secondary" className="gap-1">
+                              <Clock className="h-3 w-3" />
+                              Awaiting Confirmations
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground font-mono">
+                            {tx.transaction_hash.substring(0, 20)}...
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {new Date(tx.created_at).toLocaleDateString()} at{" "}
+                            {new Date(tx.created_at).toLocaleTimeString()}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-yellow-600 dark:text-yellow-400">
+                            ${tx.amount.toFixed(2)}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Verified Transactions */}
+              {verifiedTransactions.length === 0 && pendingTransactions.length === 0 ? (
                 <div className="text-center py-8">
                   <Receipt className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
                   <p className="text-muted-foreground">No transactions yet</p>
@@ -373,33 +491,42 @@ export default function AccountPage() {
                     Make a Deposit
                   </Button>
                 </div>
-              ) : (
-                <div className="space-y-4">
-                  {transactions.map((tx) => (
-                    <div
-                      key={tx.id}
-                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <p className="font-medium">{tx.cryptocurrency} Deposit</p>
-                          <Badge variant={getStatusColor(tx.status)}>{tx.status}</Badge>
+              ) : verifiedTransactions.length > 0 && (
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <h4 className="font-semibold text-sm">Completed Transactions</h4>
+                  </div>
+                  <div className="space-y-4">
+                    {verifiedTransactions.map((tx) => (
+                      <div
+                        key={tx.id}
+                        className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                      >
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <p className="font-medium">{tx.cryptocurrency} Deposit</p>
+                            <Badge variant="default" className="gap-1">
+                              <CheckCircle className="h-3 w-3" />
+                              Verified
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground font-mono">
+                            {tx.transaction_hash.substring(0, 20)}...
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {new Date(tx.created_at).toLocaleDateString()} at{" "}
+                            {new Date(tx.created_at).toLocaleTimeString()}
+                          </p>
                         </div>
-                        <p className="text-sm text-muted-foreground font-mono">
-                          {tx.transaction_hash.substring(0, 20)}...
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {new Date(tx.created_at).toLocaleDateString()} at{" "}
-                          {new Date(tx.created_at).toLocaleTimeString()}
-                        </p>
+                        <div className="text-right">
+                          <p className="font-bold text-green-600 dark:text-green-400">
+                            +${tx.amount.toFixed(2)}
+                          </p>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <p className="font-bold text-green-600 dark:text-green-400">
-                          +${tx.amount.toFixed(2)}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               )}
             </Card>

@@ -28,9 +28,10 @@ export default function DepositPage() {
   const [currentAddress, setCurrentAddress] = useState<string>("");
   const [qrCodeUrl, setQrCodeUrl] = useState<string>("");
   const [transactionId, setTransactionId] = useState<string>("");
-  const [amount, setAmount] = useState<string>("");
   const [isVerifying, setIsVerifying] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [detectedAmount, setDetectedAmount] = useState<number | null>(null);
+  const [detectedConfirmations, setDetectedConfirmations] = useState<number>(0);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -55,7 +56,6 @@ export default function DepositPage() {
         }
         
         const data = await response.json();
-        // API returns array directly, filter for active ones
         const activeAddresses = Array.isArray(data) ? data.filter((addr: CryptoAddress) => addr.isActive) : [];
         setCryptoAddresses(activeAddresses);
       } catch (error) {
@@ -66,7 +66,6 @@ export default function DepositPage() {
       }
     };
 
-    // FIX: Set loading to false if no session, otherwise fetch
     if (!session?.user) {
       setIsLoading(false);
       return;
@@ -86,13 +85,11 @@ export default function DepositPage() {
 
     setCurrentAddress(addressData.address);
 
-    // Format address as Bitcoin URI for Exodus wallet compatibility
     let formattedAddress = addressData.address;
     if (crypto === "bitcoin") {
       formattedAddress = `bitcoin:${addressData.address}`;
     }
 
-    // Generate QR code with formatted URI
     try {
       const response = await fetch("/api/generate-qr", {
         method: "POST",
@@ -115,52 +112,54 @@ export default function DepositPage() {
   };
 
   const handleVerifyTransaction = async () => {
-    if (!transactionId.trim() || !amount.trim()) {
-      toast.error("Please enter both transaction ID and amount");
-      return;
-    }
-
-    const amountNum = parseFloat(amount);
-    if (isNaN(amountNum) || amountNum <= 0) {
-      toast.error("Please enter a valid amount");
+    if (!transactionId.trim()) {
+      toast.error("Please enter transaction ID");
       return;
     }
 
     setIsVerifying(true);
+    setDetectedAmount(null);
+    setDetectedConfirmations(0);
 
     try {
       const token = localStorage.getItem("bearer_token");
       
-      // Submit transaction for verification
-      const response = await fetch("/api/transactions", {
+      const response = await fetch("/api/transactions/verify", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          userId: session?.user?.id,
-          cryptocurrency: selectedCrypto,
-          amount: amountNum,
           transactionHash: transactionId.trim(),
-          status: "pending",
+          cryptocurrency: selectedCrypto,
+          userId: session?.user?.id,
+          targetAddress: currentAddress,
         }),
       });
 
       const data = await response.json();
 
-      if (response.ok && data) {
-        toast.success("Transaction submitted for verification!");
-        setStep("verify");
-        setTimeout(() => {
-          router.push("/account");
-        }, 2000);
-      } else {
-        // Check for duplicate transaction hash error
-        if (data.code === "DUPLICATE_TRANSACTION_HASH") {
-          toast.error("This transaction has already been submitted. Each transaction can only be credited once.");
+      if (response.ok && data.success) {
+        setDetectedAmount(data.usdAmount);
+        setDetectedConfirmations(data.confirmations);
+        
+        if (data.confirmations >= 2) {
+          toast.success(`Transaction verified! ${data.usdAmount.toFixed(2)} USD will be credited to your account.`);
+          setStep("verify");
+          setTimeout(() => {
+            router.push("/account");
+          }, 2000);
         } else {
-          toast.error(data.error || "Failed to submit transaction");
+          toast.info(`Transaction detected with ${data.confirmations} confirmation(s). Waiting for 2+ confirmations...`);
+        }
+      } else {
+        if (data.code === "DUPLICATE_TRANSACTION") {
+          toast.error("This transaction has already been submitted.");
+        } else if (data.code === "INSUFFICIENT_CONFIRMATIONS") {
+          toast.error(`Transaction needs ${data.required - data.current} more confirmation(s).`);
+        } else {
+          toast.error(data.error || "Failed to verify transaction");
         }
       }
     } catch (error) {
@@ -282,7 +281,7 @@ export default function DepositPage() {
                 <Alert className="mb-6 bg-primary/10 border-primary/20">
                   <AlertCircle className="h-4 w-4 text-primary" />
                   <AlertDescription className="text-sm">
-                    <strong>Exodus Wallet Compatible:</strong> This QR code will automatically open your Exodus wallet app when scanned, with the address pre-filled.
+                    <strong>Exodus Wallet Compatible:</strong> This QR code will automatically open your Exodus wallet app when scanned.
                   </AlertDescription>
                 </Alert>
               )}
@@ -310,27 +309,11 @@ export default function DepositPage() {
               <Alert variant="destructive" className="mb-6">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  <strong>Important:</strong> Please double-check the address before sending. Cryptocurrency transactions are non-refundable. Make sure you're sending to the correct address.
+                  <strong>Important:</strong> Cryptocurrency transactions are non-refundable. Double-check the address before sending.
                 </AlertDescription>
               </Alert>
 
               <div className="space-y-4 mb-6">
-                <div>
-                  <Label htmlFor="amount">Amount Sent (USD)</Label>
-                  <Input
-                    id="amount"
-                    type="number"
-                    step="0.01"
-                    placeholder="0.00"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    className="mt-2"
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Enter the USD value at the time you made the transaction
-                  </p>
-                </div>
-
                 <div>
                   <Label htmlFor="txid">Transaction ID</Label>
                   <Input
@@ -344,6 +327,15 @@ export default function DepositPage() {
                     The transaction hash from your wallet
                   </p>
                 </div>
+
+                {detectedAmount !== null && (
+                  <Alert className="bg-primary/10 border-primary/20">
+                    <Check className="h-4 w-4 text-primary" />
+                    <AlertDescription>
+                      <strong>Detected:</strong> ${detectedAmount.toFixed(2)} USD • {detectedConfirmations} confirmation(s)
+                    </AlertDescription>
+                  </Alert>
+                )}
               </div>
 
               <Button
@@ -355,15 +347,15 @@ export default function DepositPage() {
                 {isVerifying ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Submitting...
+                    Verifying Transaction...
                   </>
                 ) : (
-                  "Submit Transaction for Verification"
+                  "Verify & Submit Transaction"
                 )}
               </Button>
 
               <p className="text-sm text-muted-foreground mt-4 text-center">
-                Your transaction will be verified using mempool data. Credits will be added based on the USD value at the time of your transaction. Each transaction can only be credited once.
+                Amount automatically detected from blockchain. Credits based on USD value at transaction time. Requires 2+ confirmations.
               </p>
             </Card>
           )}
@@ -373,10 +365,16 @@ export default function DepositPage() {
               <div className="w-16 h-16 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Check className="h-8 w-8 text-green-600 dark:text-green-400" />
               </div>
-              <h2 className="text-3xl font-bold mb-2">Transaction Submitted!</h2>
+              <h2 className="text-3xl font-bold mb-2">Transaction Verified!</h2>
               <p className="text-muted-foreground mb-6">
-                Your transaction has been submitted for verification. You will be notified once it's approved and funds are credited to your account based on the USD conversion rate at the time of your transaction.
+                Your transaction has been verified and credited to your account based on the USD value at transaction time.
               </p>
+              {detectedAmount && (
+                <div className="bg-primary/10 rounded-lg p-4 mb-6">
+                  <p className="text-2xl font-bold text-primary">${detectedAmount.toFixed(2)}</p>
+                  <p className="text-sm text-muted-foreground">credited to your account</p>
+                </div>
+              )}
               <Button onClick={() => router.push("/account")} size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90">
                 Go to Account
               </Button>
