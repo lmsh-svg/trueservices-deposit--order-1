@@ -118,6 +118,13 @@ export default function DepositPage() {
       return;
     }
 
+    // Validate session and user ID
+    if (!session?.user?.id) {
+      toast.error("Session expired. Please sign in again.");
+      router.push("/sign-in?redirect=/deposit");
+      return;
+    }
+
     setIsVerifying(true);
     setDetectedAmount(null);
     setDetectedConfirmations(0);
@@ -125,6 +132,16 @@ export default function DepositPage() {
 
     try {
       const token = localStorage.getItem("bearer_token");
+      
+      // Ensure userId is sent as a string
+      const userId = String(session.user.id);
+      
+      console.log("Submitting transaction:", {
+        transactionHash: transactionId.trim(),
+        cryptocurrency: selectedCrypto,
+        userId: userId,
+        targetAddress: currentAddress,
+      });
       
       const response = await fetch("/api/transactions/verify", {
         method: "POST",
@@ -135,7 +152,7 @@ export default function DepositPage() {
         body: JSON.stringify({
           transactionHash: transactionId.trim(),
           cryptocurrency: selectedCrypto,
-          userId: session?.user?.id,
+          userId: userId,
           targetAddress: currentAddress,
         }),
       });
@@ -173,6 +190,8 @@ export default function DepositPage() {
           errorMessage = `Transaction was not sent to our address. Please send to: ${currentAddress}`;
         } else if (data.code === "UNCONFIRMED") {
           errorMessage = "Transaction has 0 confirmations. Please wait for confirmations.";
+        } else if (data.code === "INVALID_USER_ID") {
+          errorMessage = "Session error. Please sign out and sign in again.";
         } else if (data.details) {
           errorMessage = `${errorMessage}: ${data.details}`;
         }

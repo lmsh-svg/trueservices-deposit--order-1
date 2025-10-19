@@ -18,6 +18,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate and parse userId
+    const parsedUserId = parseInt(userId);
+    if (isNaN(parsedUserId) || parsedUserId <= 0) {
+      console.error('Invalid userId:', userId, 'parsed:', parsedUserId);
+      return NextResponse.json(
+        { 
+          error: 'Invalid user ID', 
+          code: 'INVALID_USER_ID' 
+        },
+        { status: 400 }
+      );
+    }
+
     // Check for duplicate transaction hash
     const existingTx = await db
       .select()
@@ -73,7 +86,7 @@ export async function POST(request: NextRequest) {
 
         // Create transaction record
         await db.insert(transactions).values({
-          userId: parseInt(userId),
+          userId: parsedUserId,
           cryptocurrency,
           amount: txData.usdAmount,
           transactionHash,
@@ -87,7 +100,7 @@ export async function POST(request: NextRequest) {
         const user = await db
           .select()
           .from(users)
-          .where(eq(users.id, parseInt(userId)))
+          .where(eq(users.id, parsedUserId))
           .limit(1);
 
         if (user.length === 0) {
@@ -106,7 +119,7 @@ export async function POST(request: NextRequest) {
             balance: newBalance,
             updatedAt: now,
           })
-          .where(eq(users.id, parseInt(userId)));
+          .where(eq(users.id, parsedUserId));
 
         return NextResponse.json({
           success: true,
