@@ -22,6 +22,18 @@ interface CryptoAddress {
 export default function DepositPage() {
   const router = useRouter();
   const { data: session, isPending } = useSession();
+  
+  // Add debug logging for session
+  useEffect(() => {
+    console.log("Session state:", {
+      isPending,
+      hasSession: !!session,
+      hasUser: !!session?.user,
+      userId: session?.user?.id,
+      userIdType: typeof session?.user?.id,
+    });
+  }, [session, isPending]);
+
   const [step, setStep] = useState<"select" | "scan" | "verify">("select");
   const [selectedCrypto, setSelectedCrypto] = useState<string>("");
   const [cryptoAddresses, setCryptoAddresses] = useState<CryptoAddress[]>([]);
@@ -118,9 +130,41 @@ export default function DepositPage() {
       return;
     }
 
-    // Validate session and user ID
-    if (!session?.user?.id) {
-      toast.error("Session expired. Please sign in again.");
+    // Enhanced session validation with detailed logging
+    console.log("Validating session before submit:", {
+      hasSession: !!session,
+      hasUser: !!session?.user,
+      userId: session?.user?.id,
+      userIdType: typeof session?.user?.id,
+      fullSession: session,
+    });
+
+    if (!session?.user) {
+      console.error("No session or user found");
+      toast.error("Session not loaded. Please wait and try again.");
+      return;
+    }
+
+    if (!session.user.id) {
+      console.error("User ID is missing from session");
+      toast.error("User ID not found. Please sign out and sign in again.");
+      router.push("/sign-in?redirect=/deposit");
+      return;
+    }
+
+    // Validate userId is a valid value
+    const rawUserId = session.user.id;
+    const userIdStr = String(rawUserId).trim();
+    
+    // Check if conversion to number works
+    const userIdNum = Number(userIdStr);
+    if (isNaN(userIdNum) || userIdNum <= 0) {
+      console.error("Invalid user ID:", {
+        raw: rawUserId,
+        string: userIdStr,
+        number: userIdNum,
+      });
+      toast.error("Invalid user ID. Please sign out and sign in again.");
       router.push("/sign-in?redirect=/deposit");
       return;
     }
@@ -133,13 +177,10 @@ export default function DepositPage() {
     try {
       const token = localStorage.getItem("bearer_token");
       
-      // Ensure userId is sent as a string
-      const userId = String(session.user.id);
-      
-      console.log("Submitting transaction:", {
+      console.log("Submitting transaction with validated userId:", {
         transactionHash: transactionId.trim(),
         cryptocurrency: selectedCrypto,
-        userId: userId,
+        userId: userIdStr,
         targetAddress: currentAddress,
       });
       
@@ -152,12 +193,14 @@ export default function DepositPage() {
         body: JSON.stringify({
           transactionHash: transactionId.trim(),
           cryptocurrency: selectedCrypto,
-          userId: userId,
+          userId: userIdStr,
           targetAddress: currentAddress,
         }),
       });
 
       const data = await response.json();
+
+      console.log("Verification response:", data);
 
       if (response.ok && data.success) {
         setDetectedAmount(data.usdAmount);
