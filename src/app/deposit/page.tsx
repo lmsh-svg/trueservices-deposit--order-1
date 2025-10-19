@@ -32,6 +32,7 @@ export default function DepositPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [detectedAmount, setDetectedAmount] = useState<number | null>(null);
   const [detectedConfirmations, setDetectedConfirmations] = useState<number>(0);
+  const [verificationError, setVerificationError] = useState<string>("");
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -120,6 +121,7 @@ export default function DepositPage() {
     setIsVerifying(true);
     setDetectedAmount(null);
     setDetectedConfirmations(0);
+    setVerificationError("");
 
     try {
       const token = localStorage.getItem("bearer_token");
@@ -145,7 +147,7 @@ export default function DepositPage() {
         setDetectedConfirmations(data.confirmations);
         
         if (data.confirmations >= 2) {
-          toast.success(`Transaction verified! ${data.usdAmount.toFixed(2)} USD will be credited to your account.`);
+          toast.success(`Transaction verified! ${data.usdAmount.toFixed(2)} USD credited to your account.`);
           setStep("verify");
           setTimeout(() => {
             router.push("/account");
@@ -154,17 +156,35 @@ export default function DepositPage() {
           toast.info(`Transaction detected with ${data.confirmations} confirmation(s). Waiting for 2+ confirmations...`);
         }
       } else {
+        // Show detailed error messages
+        let errorMessage = data.error || "Failed to verify transaction";
+        
         if (data.code === "DUPLICATE_TRANSACTION") {
-          toast.error("This transaction has already been submitted.");
+          errorMessage = "This transaction has already been submitted and credited.";
         } else if (data.code === "INSUFFICIENT_CONFIRMATIONS") {
-          toast.error(`Transaction needs ${data.required - data.current} more confirmation(s).`);
-        } else {
-          toast.error(data.error || "Failed to verify transaction");
+          errorMessage = `Transaction needs ${data.required - data.current} more confirmation(s). Current: ${data.current}/${data.required}`;
+          setDetectedConfirmations(data.current);
+          if (data.btcAmount) {
+            setDetectedAmount(data.usdAmount);
+          }
+        } else if (data.code === "TX_NOT_FOUND") {
+          errorMessage = "Transaction not found on blockchain. Please verify the transaction ID is correct.";
+        } else if (data.code === "INVALID_RECIPIENT") {
+          errorMessage = `Transaction was not sent to our address. Please send to: ${currentAddress}`;
+        } else if (data.code === "UNCONFIRMED") {
+          errorMessage = "Transaction has 0 confirmations. Please wait for confirmations.";
+        } else if (data.details) {
+          errorMessage = `${errorMessage}: ${data.details}`;
         }
+        
+        setVerificationError(errorMessage);
+        toast.error(errorMessage);
       }
     } catch (error) {
       console.error("Error verifying transaction:", error);
-      toast.error("Failed to verify transaction");
+      const errorMsg = "Network error. Please check your connection and try again.";
+      setVerificationError(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setIsVerifying(false);
     }
@@ -320,7 +340,10 @@ export default function DepositPage() {
                     id="txid"
                     placeholder="Enter transaction hash"
                     value={transactionId}
-                    onChange={(e) => setTransactionId(e.target.value)}
+                    onChange={(e) => {
+                      setTransactionId(e.target.value);
+                      setVerificationError("");
+                    }}
                     className="mt-2 font-mono text-sm"
                   />
                   <p className="text-xs text-muted-foreground mt-1">
@@ -328,11 +351,25 @@ export default function DepositPage() {
                   </p>
                 </div>
 
-                {detectedAmount !== null && (
+                {verificationError && (
+                  <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription className="text-sm">
+                      {verificationError}
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                {detectedAmount !== null && !verificationError && (
                   <Alert className="bg-primary/10 border-primary/20">
                     <Check className="h-4 w-4 text-primary" />
                     <AlertDescription>
                       <strong>Detected:</strong> ${detectedAmount.toFixed(2)} USD • {detectedConfirmations} confirmation(s)
+                      {detectedConfirmations < 2 && (
+                        <span className="block text-yellow-600 dark:text-yellow-400 mt-1">
+                          Waiting for {2 - detectedConfirmations} more confirmation(s)...
+                        </span>
+                      )}
                     </AlertDescription>
                   </Alert>
                 )}
@@ -340,7 +377,7 @@ export default function DepositPage() {
 
               <Button
                 onClick={handleVerifyTransaction}
-                disabled={isVerifying}
+                disabled={isVerifying || !transactionId.trim()}
                 className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
                 size="lg"
               >

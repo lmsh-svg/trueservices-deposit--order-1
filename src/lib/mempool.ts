@@ -76,15 +76,19 @@ export async function getHistoricalPrice(timestamp: number): Promise<number> {
   // Convert to Unix timestamp if needed
   const unixTimestamp = Math.floor(timestamp / 1000);
   
-  const response = await fetch(`${MEMPOOL_API_BASE}/v1/historical-price?timestamp=${unixTimestamp}`);
+  const response = await fetch(`${MEMPOOL_API_BASE}/v1/historical-price?currency=USD&timestamp=${unixTimestamp}`);
   
   if (!response.ok) {
     throw new Error(`Failed to fetch historical price: ${response.statusText}`);
   }
   
-  const data: { prices: MempoolPrice[] } = await response.json();
+  const data: { prices: Array<{ time: number; USD: number; EUR: number }> } = await response.json();
   
   // Return USD price
+  if (!data.prices || data.prices.length === 0) {
+    throw new Error('No historical price data available for this timestamp');
+  }
+  
   return data.prices[0]?.USD || 0;
 }
 
